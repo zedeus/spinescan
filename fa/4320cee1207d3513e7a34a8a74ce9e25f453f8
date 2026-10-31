@@ -1,0 +1,19 @@
+.gitignore
+  s_273d0c7ce55aaa::t_f3ff923c503459 1-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fa4320cee1207d3513e7a34a8a74ce9e25f453f8",
+  "prompts": {},
+  "sessions": {
+    "s_273d0c7ce55aaa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3dc037d3-6b13-4ddb-8d45-63fd51cfecb1",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
