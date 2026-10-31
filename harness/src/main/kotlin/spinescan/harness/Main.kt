@@ -58,6 +58,7 @@ private fun runCommand(args: List<String>) {
 
     val path = args[0]
     var packPath = findPack()
+    var dbPath: String? = findDb()
     var maxDim = 0
     var outputDir: String? = null
     var annotate = true
@@ -66,7 +67,8 @@ private fun runCommand(args: List<String>) {
     var i = 1
     while (i < args.size) {
         when (args[i]) {
-            "--pack" -> { i++; if (i >= args.size) { System.err.println("--pack requires a value"); return }; packPath = args[i] }
+            "--pack" -> { i++; if (i >= args.size) { System.err.println("--pack requires a value"); return }; packPath = args[i]; dbPath = null }
+            "--db" -> { i++; if (i >= args.size) { System.err.println("--db requires a value"); return }; dbPath = args[i] }
             "--max-dim" -> { i++; if (i >= args.size) { System.err.println("--max-dim requires a value"); return }; maxDim = args[i].toInt() }
             "--output" -> { i++; if (i >= args.size) { System.err.println("--output requires a value"); return }; outputDir = args[i] }
             "--no-annotate" -> annotate = false
@@ -76,10 +78,17 @@ private fun runCommand(args: List<String>) {
         i++
     }
 
-    // Load pack
-    println("Loading pack from $packPath ...")
-    val pack = PackLoader.load(packPath)
-    println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
+    // Load game index — prefer full games.db over the 10k pack
+    val pack: PackLoader.Pack
+    if (dbPath != null && File(dbPath).exists()) {
+        println("Loading full game database from $dbPath ...")
+        pack = FullDbLoader.load(dbPath!!)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries")
+    } else {
+        println("Loading pack from $packPath ...")
+        pack = PackLoader.load(packPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
+    }
 
     // Load thresholds
     val thresholds = Thresholds.load()
@@ -265,4 +274,11 @@ private fun findPack(): String {
         if (File(c).exists()) return c
     }
     return "pack.db"
+}
+
+private fun findDb(): String? {
+    for (c in listOf("games.db", "../games.db", "data/games.db", "../data/games.db")) {
+        if (File(c).exists()) return c
+    }
+    return null
 }
