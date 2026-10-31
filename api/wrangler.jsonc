@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "spinescan-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "spinescan",
+      // Set to the real database id before deploying; local dev and tests ignore it.
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+  // The shared access token is a secret, never in this file:
+  //   wrangler secret put API_TOKEN
+}

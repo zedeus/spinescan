@@ -33,3 +33,9 @@ Thumbs.db
 __pycache__/
 *.pyc
 .venv/
+
+# API (api/)
+node_modules/
+.wrangler/
+# D1 load output (private data)
+d1-out/
