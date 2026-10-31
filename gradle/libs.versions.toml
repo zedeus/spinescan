@@ -3,6 +3,9 @@ kotlin = "2.1.20"
 agp = "8.9.3"
 junit = "5.11.4"
 sqlite-jdbc = "3.46.1.0"
+rapidocr = "0.0.7"
+rapidocr-native = "1.2.2"
+onnxruntime = "1.21.0"
 compileSdk = "36"
 minSdk = "26"
 targetSdk = "36"
@@ -13,6 +16,10 @@ junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jun
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+rapidocr = { module = "io.github.mymonstercat:rapidocr", version.ref = "rapidocr" }
+rapidocr-onnx-models = { module = "io.github.mymonstercat:rapidocr-onnx-models", version.ref = "rapidocr-native" }
+rapidocr-onnx-linux = { module = "io.github.mymonstercat:rapidocr-onnx-linux-x86_64", version.ref = "rapidocr-native" }
+onnxruntime = { module = "com.microsoft.onnxruntime:onnxruntime", version.ref = "onnxruntime" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

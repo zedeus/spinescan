@@ -20,6 +20,7 @@ kotlin {
 
 dependencies {
     implementation(project(":core"))
+    implementation(libs.onnxruntime)
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
     testImplementation(libs.kotlin.test)

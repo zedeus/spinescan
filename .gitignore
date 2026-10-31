@@ -19,6 +19,9 @@ board-game-data/
 *.pack
 *.spinescan-pack
 
+# OCR models (downloaded at runtime)
+models/
+
 # Eval output
 eval-output/
 
