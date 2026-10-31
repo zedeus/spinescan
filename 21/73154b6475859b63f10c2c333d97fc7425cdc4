@@ -1,0 +1,32 @@
+docs/pack-format.md
+  s_dd8169957a23e5::t_c5934968e89eeb 1-35
+core/src/main/kotlin/spinescan/core/BoxState.kt
+  s_dd8169957a23e5::t_4835a907113135 1-80,83-91,98-101,103-110,113-126,129-130,132-135,137-141,143,146-147
+  s_dd8169957a23e5::t_8d1f8b287c0b30 81-82,92-97,102,111-112,127-128,131,136,142,144-145
+core/src/test/kotlin/spinescan/core/BoxStateTest.kt
+  s_dd8169957a23e5::t_fb06d24f9d6902 173-174,184-185
+  s_dd8169957a23e5::t_dcd2a3a0b195c1 1-168,170,176-179,181,187-235
+  s_dd8169957a23e5::t_6cd4fe31e75903 169,171-172,175,180,182-183,186
+core/src/main/kotlin/spinescan/core/BoxColour.kt
+  s_dd8169957a23e5::t_0a500cea30211d 1-17
+core/src/main/kotlin/spinescan/core/AliasProvider.kt
+  s_dd8169957a23e5::t_d1fb235a7edc2b 1-18
+docs/normalisation.md
+  s_dd8169957a23e5::t_0b600f3e5df348 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2173154b6475859b63f10c2c333d97fc7425cdc4",
+  "prompts": {},
+  "sessions": {
+    "s_dd8169957a23e5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66ed6048-b49b-4888-b221-3718b172743b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
