@@ -65,8 +65,16 @@ class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
     }
 
     fun detectFromImage(image: BufferedImage): List<TextLine> {
-        // 1. Run text detection
-        val boxes = runDetection(image)
+        // 1. Run text detection with tiling for large images.
+        // The det model downscales to detMaxSide (960), so a 4K shelf photo
+        // leaves each spine title at ~30px — too small. Tiled detection runs
+        // the model on overlapping crops at higher effective resolution, then
+        // merges with NMS.
+        val boxes = if (max(image.width, image.height) > detMaxSide * 1.5) {
+            runTiledDetection(image)
+        } else {
+            runDetection(image)
+        }
         if (boxes.isEmpty()) return emptyList()
 
         // 2. Crop and recognize each box
@@ -95,6 +103,82 @@ class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
     // --- Detection ---
 
     private data class DetBox(val minX: Int, val minY: Int, val maxX: Int, val maxY: Int)
+
+    /**
+     * Split a large image into overlapping tiles, detect on each, merge with NMS.
+     * Overlap is 15% so text at tile boundaries is caught by at least one tile.
+     */
+    private fun runTiledDetection(image: BufferedImage): List<DetBox> {
+        val imgW = image.width
+        val imgH = image.height
+
+        // Choose tile count: aim for tiles where max side ≈ detMaxSide
+        val cols = max(1, ceil(imgW.toDouble() / detMaxSide).toInt())
+        val rows = max(1, ceil(imgH.toDouble() / detMaxSide).toInt())
+        val overlapFrac = 0.15
+
+        val tileW = ceil(imgW.toDouble() / cols * (1 + overlapFrac)).toInt().coerceAtMost(imgW)
+        val tileH = ceil(imgH.toDouble() / rows * (1 + overlapFrac)).toInt().coerceAtMost(imgH)
+
+        val allBoxes = mutableListOf<DetBox>()
+
+        for (row in 0 until rows) {
+            for (col in 0 until cols) {
+                val x0 = (col * (imgW - tileW) / max(1, cols - 1)).coerceAtLeast(0)
+                val y0 = (row * (imgH - tileH) / max(1, rows - 1)).coerceAtLeast(0)
+                val x1 = (x0 + tileW).coerceAtMost(imgW)
+                val y1 = (y0 + tileH).coerceAtMost(imgH)
+
+                val tile = image.getSubimage(x0, y0, x1 - x0, y1 - y0)
+                val tileBoxes = runDetection(tile)
+
+                // Map tile coordinates back to image coordinates
+                for (box in tileBoxes) {
+                    allBoxes.add(DetBox(
+                        minX = box.minX + x0,
+                        minY = box.minY + y0,
+                        maxX = box.maxX + x0,
+                        maxY = box.maxY + y0,
+                    ))
+                }
+            }
+        }
+
+        return nms(allBoxes, iouThreshold = 0.4)
+    }
+
+    /** Non-max suppression: remove overlapping boxes, keeping the larger one. */
+    private fun nms(boxes: List<DetBox>, iouThreshold: Double): List<DetBox> {
+        if (boxes.size <= 1) return boxes
+        // Sort by area descending (keep larger boxes)
+        val sorted = boxes.sortedByDescending { (it.maxX - it.minX) * (it.maxY - it.minY) }
+        val keep = mutableListOf<DetBox>()
+        val suppressed = BooleanArray(sorted.size)
+
+        for (i in sorted.indices) {
+            if (suppressed[i]) continue
+            keep.add(sorted[i])
+            for (j in i + 1 until sorted.size) {
+                if (suppressed[j]) continue
+                if (iou(sorted[i], sorted[j]) > iouThreshold) {
+                    suppressed[j] = true
+                }
+            }
+        }
+        return keep
+    }
+
+    private fun iou(a: DetBox, b: DetBox): Double {
+        val interX = max(a.minX, b.minX)
+        val interY = max(a.minY, b.minY)
+        val interW = max(0, min(a.maxX, b.maxX) - interX)
+        val interH = max(0, min(a.maxY, b.maxY) - interY)
+        val inter = interW * interH
+        val areaA = (a.maxX - a.minX) * (a.maxY - a.minY)
+        val areaB = (b.maxX - b.minX) * (b.maxY - b.minY)
+        val union = areaA + areaB - inter
+        return if (union > 0) inter.toDouble() / union else 0.0
+    }
 
     private fun runDetection(image: BufferedImage): List<DetBox> {
         val origW = image.width
