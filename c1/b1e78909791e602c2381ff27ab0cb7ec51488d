@@ -1,0 +1,21 @@
+harness/src/main/kotlin/spinescan/harness/OcrModels.kt
+  s_fb85e356e1da57::t_e7f24f493b0dd3 21,23-24,26,30-31,33,36-39
+  s_fb85e356e1da57::t_0590bac7d8ba02 47,58-66,72-104
+  s_fb85e356e1da57::t_c1b40b0e6c1481 105-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c1b1e78909791e602c2381ff27ab0cb7ec51488d",
+  "prompts": {},
+  "sessions": {
+    "s_fb85e356e1da57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c646ba5-28b7-4c78-8c5f-33bf6263768b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
