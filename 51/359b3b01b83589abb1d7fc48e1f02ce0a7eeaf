@@ -1,0 +1,71 @@
+api/src/normalize.ts
+  s_64840a3f443e48::t_3b74a87ed4d476 1-46
+api/tsconfig.json
+  s_64840a3f443e48::t_672b7bf01931ff 7
+  s_64840a3f443e48::t_bcba3a6538b702 1-6,8-15
+api/package.json
+  s_64840a3f443e48::t_6fb205dc3f57ad 1-11,13-17
+  s_64840a3f443e48::t_310f1052e5fab4 12
+api/test/parity.test.ts
+  s_64840a3f443e48::t_5b6b525869d4ce 1-67
+api/test/api.test.ts
+  s_64840a3f443e48::t_440fc9a76fe018 1-3,5-87,100-157,159,161-166,168-176
+  s_64840a3f443e48::t_0b0f7a05f52d5b 158,160,167
+  s_64840a3f443e48::t_bc9e937a5fb735 88-99
+  s_64840a3f443e48::t_1b5c9277dc7203 4
+api/test/raw.d.ts
+  s_64840a3f443e48::t_c3bc11bd75e45e 1-9
+api/src/match.ts
+  s_64840a3f443e48::t_2be65a6e58645d 1-5,7-11,13-14,20-32,35-37
+  s_64840a3f443e48::t_ef98c58df4e1a7 6
+  s_64840a3f443e48::t_3c51888e3a7557 15-19
+  s_64840a3f443e48::t_5d1e605e8ef422 33-34
+  s_64840a3f443e48::t_53bca9ae957955 12
+api/src/trigram.ts
+  s_64840a3f443e48::t_e7f0ec0232a4c2 1-83,88-139
+  s_64840a3f443e48::t_57c7fecb86c951 84-87
+api/wrangler.jsonc
+  s_64840a3f443e48::t_62ea42b437d609 1-17
+api/test/env.d.ts
+  s_64840a3f443e48::t_21cd6525247f81 1-5
+.gitignore
+  s_64840a3f443e48::t_5613b2eb7c718d 36-41
+api/test/seed.ts
+  s_64840a3f443e48::t_7e8dddb370b62a 8
+  s_64840a3f443e48::t_cb0b017ea16daa 1-7,9-10,12-16,18,25-66,68,70-81
+  s_64840a3f443e48::t_97c38940e9f0d3 11,17,19-24
+  s_64840a3f443e48::t_4de1c7c35cb7b2 67,69
+api/vitest.config.ts
+  s_64840a3f443e48::t_51f1576800d2f7 1-16
+api/schema.sql
+  s_64840a3f443e48::t_0f4d85ba733b8b 1-50
+api/src/index.ts
+  s_64840a3f443e48::t_c360de7cd0a901 77-78,81,89
+  s_64840a3f443e48::t_ce8b8f96d53570 26
+  s_64840a3f443e48::t_445cbf338434cb 98-101
+  s_64840a3f443e48::t_c6ef67edb83b2d 52-62
+  s_64840a3f443e48::t_d86a7bf74a2773 1-16,18-21,23-25,27-51,63-76,79-80,84-85,90,92-97,102-148,150,152-173
+  s_64840a3f443e48::t_93149a3732a8ad 149,151
+  s_64840a3f443e48::t_fe2a3e626e9c76 22
+  s_64840a3f443e48::t_f91bc608c6f8bc 86-88,91
+  s_64840a3f443e48::t_8d2ea3618a964e 17
+  s_64840a3f443e48::t_0323d7b30b900f 82-83
+api/package-lock.json
+  s_64840a3f443e48::t_01f80cd300a160 1-4159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "51359b3b01b83589abb1d7fc48e1f02ce0a7eeaf",
+  "prompts": {},
+  "sessions": {
+    "s_64840a3f443e48": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2285c2c1-d952-4ee3-80c0-ac96be12523d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
