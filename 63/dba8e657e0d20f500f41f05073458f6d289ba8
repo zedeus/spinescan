@@ -1,0 +1,33 @@
+core/src/test/kotlin/spinescan/core/TrigramIndexTest.kt
+  s_dd8169957a23e5::t_ed628c74b46ad7 1-127
+core/src/main/kotlin/spinescan/core/PackLoader.kt
+  s_dd8169957a23e5::t_1e6af8315328a9 1-4,6-37,39-40,43-45,47-48,54-55,80-82,97-100,107
+  s_dd8169957a23e5::t_7ef3532d41721f 5,38,41-42,46,49-53,56-79,83-96,101-106
+core/src/main/kotlin/spinescan/core/TrigramIndex.kt
+  s_dd8169957a23e5::t_4417682c67f3b7 1-18,20-23,26-28,30-43,46-47,49-70,72,74-83,86-87,89-91,94-100,102-108,112,115-124,131-136,146,148-150
+  s_dd8169957a23e5::t_cdc72bbc93132b 19,24-25,29,44-45,48,71,73,84-85,88,92-93,101,109-111,113-114,125-130,137-145,147
+gradle/libs.versions.toml
+  s_dd8169957a23e5::t_0dc67edf19aca6 5,15
+core/build.gradle.kts
+  s_dd8169957a23e5::t_e1f42ade0490ef 17
+core/src/main/kotlin/spinescan/core/Normalize.kt
+  s_dd8169957a23e5::t_c5bb5e78d493bc 1-60
+core/src/test/kotlin/spinescan/core/NormalizeTest.kt
+  s_dd8169957a23e5::t_7ba5b7038e75ae 1-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "63dba8e657e0d20f500f41f05073458f6d289ba8",
+  "prompts": {},
+  "sessions": {
+    "s_dd8169957a23e5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66ed6048-b49b-4888-b221-3718b172743b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
