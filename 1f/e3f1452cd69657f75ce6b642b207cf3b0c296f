@@ -1,0 +1,40 @@
+core/src/test/kotlin/spinescan/core/NormalizeTest.kt
+  s_64840a3f443e48::t_3968145f0271dc 22
+core/src/test/kotlin/spinescan/core/TestFixtures.kt
+  s_64840a3f443e48::t_c1f31731811d2a 1-15
+core/src/test/kotlin/spinescan/core/MatchParityTest.kt
+  s_64840a3f443e48::t_8f8dee9b72dbd2 1-39,41-61
+  s_64840a3f443e48::t_85a42a44b0339d 40
+gradle/libs.versions.toml
+  s_8f122b7107cca4::t_519ad3bdb666e2 9,19
+  s_8f122b7107cca4::t_cc1a994f7bfe4f 29
+fixtures/match-cases.json
+  s_64840a3f443e48::t_92205964d2ff80 1-82
+core/build.gradle.kts
+  s_64840a3f443e48::t_7747c5c80c9896 19
+  s_64840a3f443e48::t_e1901e265707ca 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1fe3f1452cd69657f75ce6b642b207cf3b0c296f",
+  "prompts": {},
+  "sessions": {
+    "s_64840a3f443e48": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2285c2c1-d952-4ee3-80c0-ac96be12523d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    },
+    "s_8f122b7107cca4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9c29538-8b20-486d-b066-a8b18a5cfb4d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
