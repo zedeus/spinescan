@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     application
 }
 
@@ -21,6 +22,7 @@ kotlin {
 dependencies {
     implementation(project(":core"))
     implementation(libs.onnxruntime)
+    implementation(libs.serialization.json)
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
     testImplementation(libs.kotlin.test)

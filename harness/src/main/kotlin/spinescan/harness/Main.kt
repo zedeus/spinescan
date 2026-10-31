@@ -16,6 +16,8 @@ fun main(args: Array<String>) {
 
     when (args[0]) {
         "run" -> runCommand(args.drop(1))
+        "eval" -> evalCommand(args.drop(1))
+        "predict" -> predictCommand(args.drop(1))
         "help", "--help", "-h" -> printUsage()
         else -> {
             if (File(args[0]).exists()) {
@@ -34,19 +36,26 @@ private fun printUsage() {
 
         Usage:
           harness run <path> [options]     Run pipeline on a photo, directory, or video
+          harness eval [options]           Run eval on labelled test set
           harness help                     Show this help
 
-        Options:
+        Run options:
           --pack <path>       Path to pack.db (default: pack.db in project root)
           --max-dim <N>       Downscale frames so neither side exceeds N pixels
           --output <dir>      Write annotated images to this directory
           --no-annotate       Skip writing annotated output images
           --models <dir>      Path to OCR models directory (default: models/)
 
+        Eval options:
+          --accept            Save the current run as the new baseline
+          --testset <dir>     Path to testset directory (default: testset/)
+          --models <dir>      Path to OCR models directory (default: models/)
+
         Examples:
           harness run testset/photos/shelf01.jpg
           harness run testset/photos/ --output eval-output/
-          harness run testset/video.mp4 --max-dim 1920
+          harness eval
+          harness eval --accept
     """.trimIndent())
 }
 
@@ -144,7 +153,7 @@ private fun runCommand(args: List<String>) {
         val boxes = spineBoxes.map { spineBox ->
             val normText = Normalize.normalize(spineBox.text)
             val candidates = if (normText.isNotBlank()) {
-                pack.index.lookup(normText)
+                TextMatcher.matchAll(spineBox.text, pack.index)
             } else emptyList()
 
             val state = BoxState(0, thresholds)
@@ -281,4 +290,209 @@ private fun findDb(): String? {
         if (File(c).exists()) return c
     }
     return null
+}
+
+private fun evalCommand(args: List<String>) {
+    var accept = false
+    var testsetPath = findTestset()
+    var modelsDir: String? = null
+    var forcedPackPath: String? = null
+
+    var i = 0
+    while (i < args.size) {
+        when (args[i]) {
+            "--accept" -> accept = true
+            "--pack" -> { i++; if (i >= args.size) { System.err.println("--pack requires a value"); return }; forcedPackPath = args[i] }
+            "--testset" -> { i++; if (i >= args.size) { System.err.println("--testset requires a value"); return }; testsetPath = args[i] }
+            "--models" -> { i++; if (i >= args.size) { System.err.println("--models requires a value"); return }; modelsDir = args[i] }
+            else -> System.err.println("Unknown option: ${args[i]}")
+        }
+        i++
+    }
+
+    val testsetDir = File(testsetPath)
+    if (!testsetDir.exists()) {
+        System.err.println("Testset directory not found: $testsetPath")
+        return
+    }
+
+    // Load game index — a forced --pack mimics the phone (names-only pack)
+    val dbPath = findDb()
+    val pack: PackLoader.Pack
+    if (forcedPackPath != null) {
+        println("Loading pack from $forcedPackPath ...")
+        pack = PackLoader.load(forcedPackPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
+    } else if (dbPath != null && File(dbPath).exists()) {
+        println("Loading full game database from $dbPath ...")
+        pack = FullDbLoader.load(dbPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries")
+    } else {
+        val packPath = findPack()
+        println("Loading pack from $packPath ...")
+        pack = PackLoader.load(packPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
+    }
+
+    val thresholds = Thresholds.load()
+    println("  Thresholds: green=${thresholds.greenScore}, lead=${thresholds.greenLead}, " +
+            "frames=${thresholds.greenFrames}, single=${thresholds.greenSingle}, " +
+            "floor=${thresholds.orangeFloor}")
+
+    // Init OCR
+    println("Initializing OCR engine ...")
+    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
+    OcrModels.ensureModels(modelDir)
+    val ocrEngine = PpOcrEngine(modelDir)
+    println("  Models loaded from ${modelDir.absolutePath}")
+    println()
+
+    val eval = Eval(
+        testsetDir = testsetDir,
+        pack = pack,
+        thresholds = thresholds,
+        ocrEngine = ocrEngine,
+        outputDir = File(testsetDir, "eval-output"),
+    )
+
+    val ok = eval.run(accept = accept)
+    if (!ok) {
+        System.exit(1)
+    }
+}
+
+/**
+ * Run pipeline on all test photos and output predictions as JSON for the labeling page.
+ * Writes testset/predictions.json with box detections per photo.
+ */
+private fun predictCommand(args: List<String>) {
+    var testsetPath = findTestset()
+    var modelsDir: String? = null
+
+    var i = 0
+    while (i < args.size) {
+        when (args[i]) {
+            "--testset" -> { i++; testsetPath = args[i] }
+            "--models" -> { i++; modelsDir = args[i] }
+            else -> System.err.println("Unknown option: ${args[i]}")
+        }
+        i++
+    }
+
+    val testsetDir = File(testsetPath)
+    val photosDir = File(testsetDir, "photos")
+
+    // Load game index
+    val dbPath = findDb()
+    val packPath = findPack()
+    val pack: PackLoader.Pack
+    if (dbPath != null && File(dbPath).exists()) {
+        println("Loading full game database from $dbPath ...")
+        pack = FullDbLoader.load(dbPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries")
+    } else {
+        println("Loading pack from $packPath ...")
+        pack = PackLoader.load(packPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries")
+    }
+
+    val thresholds = Thresholds.load()
+
+    println("Initializing OCR engine ...")
+    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
+    OcrModels.ensureModels(modelDir)
+    val ocrEngine = PpOcrEngine(modelDir)
+    println()
+
+    // Find all photos recursively
+    val photos = mutableListOf<File>()
+    fun collectPhotos(dir: File) {
+        dir.listFiles()?.sorted()?.forEach { f ->
+            if (f.isDirectory) collectPhotos(f)
+            else if (FrameSource.isImage(f)) photos.add(f)
+        }
+    }
+    collectPhotos(photosDir)
+    println("Found ${photos.size} photos")
+
+    val predictions = mutableListOf<Map<String, Any?>>()
+    val grouper = BoxGrouper()
+
+    for (photo in photos) {
+        val relPath = photo.relativeTo(photosDir).path
+        print("  $relPath ... ")
+
+        val frameSource = FrameSource()
+        val frames = frameSource.load(photo.path, maxDimension = 0)
+        if (frames.isEmpty()) { println("skip"); continue }
+        val frame = frames[0]
+
+        val textLines = ocrEngine.detectFromImage(frame.image)
+        val spineBoxes = grouper.group(textLines)
+
+        val boxes = spineBoxes.map { spineBox ->
+            val normText = Normalize.normalize(spineBox.text)
+            val candidates = if (normText.isNotBlank()) {
+                TextMatcher.matchAll(spineBox.text, pack.index, topN = 3)
+            } else emptyList()
+
+            val state = BoxState(0, thresholds)
+            state.addRead(normText, candidates)
+
+            mapOf(
+                "text" to spineBox.text,
+                "rect" to listOf(spineBox.box.x, spineBox.box.y, spineBox.box.width, spineBox.box.height),
+                "colour" to state.colour.name.lowercase(),
+                "vertical" to spineBox.isVertical,
+                "match" to state.bestCandidate?.let { c ->
+                    mapOf("name" to c.name, "score" to c.score, "bggIds" to c.bggIds)
+                },
+                "candidates" to candidates.map { c ->
+                    mapOf("name" to c.name, "score" to c.score, "bggIds" to c.bggIds)
+                },
+            )
+        }
+
+        predictions.add(mapOf(
+            "photo" to relPath,
+            "width" to frame.image.width,
+            "height" to frame.image.height,
+            "boxes" to boxes,
+        ))
+
+        val g = boxes.count { (it["colour"] as String) == "green" }
+        val o = boxes.count { (it["colour"] as String) == "orange" }
+        val r = boxes.count { (it["colour"] as String) == "red" }
+        println("${textLines.size} lines → ${boxes.size} boxes (G:$g O:$o R:$r)")
+    }
+
+    // Write JSON
+    val outFile = File(testsetDir, "predictions.json")
+    val jsonStr = kotlinx.serialization.json.Json { prettyPrint = false }
+        .encodeToString(kotlinx.serialization.json.JsonElement.serializer(),
+            toJsonElement(predictions))
+    outFile.writeText(jsonStr)
+    println("\nPredictions saved to ${outFile.path}")
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun toJsonElement(value: Any?): kotlinx.serialization.json.JsonElement {
+    return when (value) {
+        null -> kotlinx.serialization.json.JsonNull
+        is String -> kotlinx.serialization.json.JsonPrimitive(value)
+        is Number -> kotlinx.serialization.json.JsonPrimitive(value)
+        is Boolean -> kotlinx.serialization.json.JsonPrimitive(value)
+        is Map<*, *> -> kotlinx.serialization.json.JsonObject(
+            (value as Map<String, Any?>).mapValues { toJsonElement(it.value) }
+        )
+        is List<*> -> kotlinx.serialization.json.JsonArray(value.map { toJsonElement(it) })
+        else -> kotlinx.serialization.json.JsonPrimitive(value.toString())
+    }
+}
+
+private fun findTestset(): String {
+    for (c in listOf("testset", "../testset")) {
+        if (File(c).exists()) return c
+    }
+    return "testset"
 }
