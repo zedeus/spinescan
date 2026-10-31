@@ -1,0 +1,42 @@
+tools/build_all.py
+  s_dd8169957a23e5::t_0317764312a8ea 1-63
+tools/tests/test_normalize.py
+  s_dd8169957a23e5::t_680331ebc22744 1-42
+tools/build_db.py
+  s_dd8169957a23e5::t_1982cbc68106ce 15
+  s_dd8169957a23e5::t_ff17c19e34f110 119-128,132-133,135-168
+  s_dd8169957a23e5::t_15f47de2ae9f50 1-14,16-118,129-131,134,169-301
+tools/build_pack.py
+  s_dd8169957a23e5::t_36487face71cf6 18
+  s_dd8169957a23e5::t_5902fb84b2b8ba 1-17,19-185
+fixtures/normalize.csv
+  s_dd8169957a23e5::t_ec2a74cf23180d 1-25
+tools/tests/test_build_db.py
+  s_dd8169957a23e5::t_5e9e0ad72343a9 1-224
+tools/normalize.py
+  s_dd8169957a23e5::t_d26b01bbe2556a 1-56
+tools/tests/test_known_games.py
+  s_dd8169957a23e5::t_0f0d915c431513 1-33,36-37,39-47,49-91
+  s_dd8169957a23e5::t_1ad54c64a5e6ac 38
+  s_dd8169957a23e5::t_df05907d840a86 48
+  s_dd8169957a23e5::t_46a4782db3c2fb 35
+  s_dd8169957a23e5::t_b33b9818880b05 34
+tools/pyproject.toml
+  s_dd8169957a23e5::t_1ae48fbac8eee6 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07c76c21522e55ccadd185efdc8e50a20c9a90b0",
+  "prompts": {},
+  "sessions": {
+    "s_dd8169957a23e5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66ed6048-b49b-4888-b221-3718b172743b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
