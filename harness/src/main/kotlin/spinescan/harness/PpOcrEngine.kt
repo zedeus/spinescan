@@ -105,40 +105,57 @@ class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
     private data class DetBox(val minX: Int, val minY: Int, val maxX: Int, val maxY: Int)
 
     /**
-     * Split a large image into overlapping tiles, detect on each, merge with NMS.
-     * Overlap is 15% so text at tile boundaries is caught by at least one tile.
+     * Downscale large images to a workable size, then split into overlapping
+     * tiles for detection. Recognition crops come from the original image
+     * so text stays sharp.
+     *
+     * A 4K photo downscaled 2× to ~2K keeps text readable and gives
+     * 2×2 = 4 tiles instead of 5×4 = 20. Each tile covers a larger region
+     * of the shelf, giving the detector more spatial context, and the
+     * overlap catches text at tile boundaries.
      */
     private fun runTiledDetection(image: BufferedImage): List<DetBox> {
-        val imgW = image.width
-        val imgH = image.height
+        val origW = image.width
+        val origH = image.height
 
-        // Choose tile count: aim for tiles where max side ≈ detMaxSide
-        val cols = max(1, ceil(imgW.toDouble() / detMaxSide).toInt())
-        val rows = max(1, ceil(imgH.toDouble() / detMaxSide).toInt())
+        // Downscale so max side ≈ 2 × detMaxSide (clean halving for 4K)
+        val targetMaxSide = detMaxSide * 2
+        val downscale = if (max(origW, origH) > targetMaxSide) {
+            targetMaxSide.toFloat() / max(origW, origH)
+        } else 1f
+
+        val workW = (origW * downscale).roundToInt()
+        val workH = (origH * downscale).roundToInt()
+        val workImage = if (downscale < 1f) resizeImage(image, workW, workH) else image
+
+        // Tile the working image so each tile is close to detMaxSide
+        val cols = max(1, ceil(workW.toDouble() / detMaxSide).toInt())
+        val rows = max(1, ceil(workH.toDouble() / detMaxSide).toInt())
         val overlapFrac = 0.15
 
-        val tileW = ceil(imgW.toDouble() / cols * (1 + overlapFrac)).toInt().coerceAtMost(imgW)
-        val tileH = ceil(imgH.toDouble() / rows * (1 + overlapFrac)).toInt().coerceAtMost(imgH)
+        val tileW = ceil(workW.toDouble() / cols * (1 + overlapFrac)).toInt().coerceAtMost(workW)
+        val tileH = ceil(workH.toDouble() / rows * (1 + overlapFrac)).toInt().coerceAtMost(workH)
 
         val allBoxes = mutableListOf<DetBox>()
 
         for (row in 0 until rows) {
             for (col in 0 until cols) {
-                val x0 = (col * (imgW - tileW) / max(1, cols - 1)).coerceAtLeast(0)
-                val y0 = (row * (imgH - tileH) / max(1, rows - 1)).coerceAtLeast(0)
-                val x1 = (x0 + tileW).coerceAtMost(imgW)
-                val y1 = (y0 + tileH).coerceAtMost(imgH)
+                val x0 = (col * (workW - tileW) / max(1, cols - 1)).coerceAtLeast(0)
+                val y0 = (row * (workH - tileH) / max(1, rows - 1)).coerceAtLeast(0)
+                val x1 = (x0 + tileW).coerceAtMost(workW)
+                val y1 = (y0 + tileH).coerceAtMost(workH)
 
-                val tile = image.getSubimage(x0, y0, x1 - x0, y1 - y0)
+                val tile = workImage.getSubimage(x0, y0, x1 - x0, y1 - y0)
                 val tileBoxes = runDetection(tile)
 
-                // Map tile coordinates back to image coordinates
+                // Map tile coordinates back to original image coordinates
+                val scaleBack = 1f / downscale
                 for (box in tileBoxes) {
                     allBoxes.add(DetBox(
-                        minX = box.minX + x0,
-                        minY = box.minY + y0,
-                        maxX = box.maxX + x0,
-                        maxY = box.maxY + y0,
+                        minX = ((box.minX + x0) * scaleBack).roundToInt().coerceAtLeast(0),
+                        minY = ((box.minY + y0) * scaleBack).roundToInt().coerceAtLeast(0),
+                        maxX = ((box.maxX + x0) * scaleBack).roundToInt().coerceAtMost(origW),
+                        maxY = ((box.maxY + y0) * scaleBack).roundToInt().coerceAtMost(origH),
                     ))
                 }
             }

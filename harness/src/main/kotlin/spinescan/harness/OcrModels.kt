@@ -18,30 +18,25 @@ object OcrModels {
         val filename: String,
     )
 
-    // PP-OCR models from HuggingFace (SWHL/RapidOCR)
+    // PP-OCRv6 small models from PaddlePaddle on HuggingFace
     val DET = ModelInfo(
-        name = "PP-OCRv4 Detection",
-        url = "https://huggingface.co/SWHL/RapidOCR/resolve/main/PP-OCRv4/ch_PP-OCRv4_det_infer.onnx",
+        name = "PP-OCRv6 Detection (small)",
+        url = "https://huggingface.co/PaddlePaddle/PP-OCRv6_small_det_onnx/resolve/main/inference.onnx",
         sha256 = "",
-        filename = "ch_PP-OCRv4_det_infer.onnx",
+        filename = "PP-OCRv6_small_det.onnx",
     )
 
     val REC = ModelInfo(
-        name = "PP-OCRv3 Recognition (English)",
-        url = "https://huggingface.co/SWHL/RapidOCR/resolve/main/PP-OCRv3/en_PP-OCRv3_rec_infer.onnx",
+        name = "PP-OCRv6 Recognition (small, multilingual)",
+        url = "https://huggingface.co/PaddlePaddle/PP-OCRv6_small_rec_onnx/resolve/main/inference.onnx",
         sha256 = "",
-        filename = "en_PP-OCRv3_rec_infer.onnx",
+        filename = "PP-OCRv6_small_rec.onnx",
     )
 
-    val CLS = ModelInfo(
-        name = "PP-OCR Classifier",
-        url = "https://huggingface.co/SWHL/RapidOCR/resolve/main/PP-OCRv3/ch_ppocr_mobile_v2.0_cls_train.onnx",
-        sha256 = "",
-        filename = "ch_ppocr_mobile_v2.0_cls_train.onnx",
-    )
-
-    val DICT_URL = "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/ppocr/utils/en_dict.txt"
-    val DICT_FILENAME = "en_dict.txt"
+    // v6 character dictionary (18,708 chars covering 50 languages)
+    val DICT_URL = "https://huggingface.co/PaddlePaddle/PP-OCRv6_small_rec_onnx/resolve/main/inference.yml"
+    val DICT_FILENAME = "ppocr_v6_dict.txt"
+    val DICT_YML_FILENAME = "PP-OCRv6_small_rec.yml"
 
     /**
      * Ensure all models are downloaded and return their directory.
@@ -49,7 +44,7 @@ object OcrModels {
     fun ensureModels(modelDir: File = defaultModelDir()): File {
         modelDir.mkdirs()
 
-        for (model in listOf(DET, REC, CLS)) {
+        for (model in listOf(DET, REC)) {
             val file = File(modelDir, model.filename)
             if (!file.exists()) {
                 println("Downloading ${model.name} ...")
@@ -60,11 +55,53 @@ object OcrModels {
 
         val dictFile = File(modelDir, DICT_FILENAME)
         if (!dictFile.exists()) {
-            println("Downloading character dictionary ...")
-            downloadFile(DICT_URL, dictFile)
+            // Download the YAML config and extract the character dictionary
+            val ymlFile = File(modelDir, DICT_YML_FILENAME)
+            if (!ymlFile.exists()) {
+                println("Downloading model config ...")
+                downloadFile(DICT_URL, ymlFile)
+            }
+            println("Extracting character dictionary ...")
+            extractDictFromYml(ymlFile, dictFile)
+            println("  → ${dictFile.name} (${dictFile.readLines().size} characters)")
         }
 
         return modelDir
+    }
+
+    /**
+     * Extract the character dictionary from PP-OCR's inference.yml.
+     * The dict is under PostProcess.character_dict as a YAML list.
+     */
+    private fun extractDictFromYml(ymlFile: File, dictFile: File) {
+        // Simple YAML parsing: find "character_dict:" then read "- X" lines
+        val lines = ymlFile.readLines()
+        val chars = mutableListOf<String>()
+        var inDict = false
+        for (line in lines) {
+            if (line.trimEnd().endsWith("character_dict:")) {
+                inDict = true
+                continue
+            }
+            if (inDict) {
+                val trimmed = line.trimStart()
+                if (trimmed.startsWith("- ")) {
+                    // Extract the character after "- "
+                    var ch = trimmed.substring(2)
+                    // Handle YAML quoting: '''' → ', "x" → x
+                    if (ch.startsWith("'") && ch.endsWith("'")) {
+                        ch = ch.substring(1, ch.length - 1).replace("''", "'")
+                    } else if (ch.startsWith("\"") && ch.endsWith("\"")) {
+                        ch = ch.substring(1, ch.length - 1)
+                    }
+                    chars.add(ch)
+                } else if (!trimmed.startsWith("#") && trimmed.isNotBlank()) {
+                    // End of the list
+                    break
+                }
+            }
+        }
+        dictFile.writeText(chars.joinToString("\n") + "\n")
     }
 
     fun defaultModelDir(): File {
