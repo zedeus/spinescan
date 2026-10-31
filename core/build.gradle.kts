@@ -14,6 +14,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.sqlite.jdbc)
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
     testImplementation(libs.kotlin.test)
