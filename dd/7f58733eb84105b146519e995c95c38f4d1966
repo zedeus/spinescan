@@ -1,0 +1,33 @@
+core/src/test/kotlin/spinescan/core/BoxGrouperTest.kt
+  s_fb85e356e1da57::t_53741ab3baf992 1-45,47,49-128,131-138
+  s_fb85e356e1da57::t_103eddac067990 46,48
+  s_fb85e356e1da57::t_47cb03212fbd65 129-130
+core/src/main/kotlin/spinescan/core/BoxGrouper.kt
+  s_fb85e356e1da57::t_8f3e814e363907 1-28,30,33-100,112,115,118-122
+  s_fb85e356e1da57::t_1e24644eea26a9 101-111,113-114,116-117
+  s_fb85e356e1da57::t_fccc135be1a2be 29,31-32
+core/src/main/kotlin/spinescan/core/Pipeline.kt
+  s_fb85e356e1da57::t_d6ad8311765c20 1-102
+core/src/main/kotlin/spinescan/core/Rect.kt
+  s_fb85e356e1da57::t_991e14208b9671 1-37
+core/src/test/kotlin/spinescan/core/RectTest.kt
+  s_fb85e356e1da57::t_10b2737a64ac5b 1-53
+core/src/main/kotlin/spinescan/core/OcrEngine.kt
+  s_fb85e356e1da57::t_e139beca8bc7d4 1-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dd7f58733eb84105b146519e995c95c38f4d1966",
+  "prompts": {},
+  "sessions": {
+    "s_fb85e356e1da57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c646ba5-28b7-4c78-8c5f-33bf6263768b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
