@@ -16,6 +16,8 @@ class BoxGrouper(private val thresholds: GrouperThresholds = GrouperThresholds()
         val minAxisOverlap: Double = 0.15,
         /** Min area for a box to be kept (pixels). */
         val minBoxArea: Int = 400,
+        /** Min combined text length (chars) for a box to be kept. Filters junk. */
+        val minTextLength: Int = 4,
     )
 
     /**
@@ -87,7 +89,11 @@ class BoxGrouper(private val thresholds: GrouperThresholds = GrouperThresholds()
             val box = groupLines.map { it.box }.reduce { a, b -> a.union(b) }
             if (box.area < thresholds.minBoxArea) return@mapNotNull null
             val vertical = groupLines.count { it.isVertical } > groupLines.size / 2
-            SpineBox(box = box, lines = groupLines, isVertical = vertical)
+            val spineBox = SpineBox(box = box, lines = groupLines, isVertical = vertical)
+            // Filter short text: single chars, numbers, shelf labels
+            val textLen = spineBox.text.count { it.isLetterOrDigit() }
+            if (textLen < thresholds.minTextLength) return@mapNotNull null
+            spineBox
         }.sortedWith(compareBy({ it.box.y / 50 }, { it.box.x }))  // rough row then left-to-right
     }
 

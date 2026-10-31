@@ -91,6 +91,28 @@ class BoxGrouperTest {
         assertTrue(boxes.isEmpty(), "Tiny boxes should be filtered")
     }
 
+    /** Short junk text (numbers, single chars) is filtered out. */
+    @Test
+    fun `short text boxes are filtered out`() {
+        val lines = listOf(
+            TextLine(Rect(50, 50, 100, 100), "2", 0.9f),
+            TextLine(Rect(200, 50, 100, 100), "0", 0.9f),
+            TextLine(Rect(400, 50, 100, 100), "AB", 0.9f),
+        )
+        val boxes = grouper.group(lines)
+        assertTrue(boxes.isEmpty(), "Short text (< 4 chars) should be filtered")
+    }
+
+    /** Text at exactly the minimum length is kept. */
+    @Test
+    fun `text at minimum length is kept`() {
+        val lines = listOf(
+            TextLine(Rect(50, 50, 150, 30), "AZUL", 0.9f),
+        )
+        val boxes = grouper.group(lines)
+        assertEquals(1, boxes.size, "4-char text should be kept")
+    }
+
     /** Boxes are sorted roughly by row then left-to-right. */
     @Test
     fun `boxes sorted by position`() {
