@@ -14,6 +14,10 @@ class TrigramIndex {
         val bggIds: List<Int>,
         val name: String,
         val score: Double,
+        /** How much of the query's trigrams are found in this entry (0..1). */
+        val containment: Double = score,
+        /** Best popularity (num_votes) across all games sharing this name. */
+        val popularity: Int = 0,
     )
 
     private class Entry(
@@ -89,9 +93,22 @@ class TrigramIndex {
 
         for ((idx, shared) in topEntries) {
             val entry = entries[idx]
-            // Union size = |A| + |B| - |A ∩ B|, no allocation needed
+            // Jaccard: |A ∩ B| / |A ∪ B|
             val union = querySize + entry.trigramCount - shared
-            val score = if (union > 0) shared.toDouble() / union else 0.0
+            val jaccard = if (union > 0) shared.toDouble() / union else 0.0
+
+            // Containment: what fraction of the query's trigrams appear in the entry.
+            // High containment means the OCR text is a (possibly truncated) read of the entry.
+            // "TERRAFORMIN MARS" has high containment in "Terraforming Mars" even though
+            // Jaccard is lowered by the missing trigrams from "ing".
+            val containment = if (querySize > 0) shared.toDouble() / querySize else 0.0
+
+            // Blended score: use the higher of Jaccard and a dampened containment.
+            // Containment alone would over-match short queries, so dampen it
+            // proportional to how much shorter the query is than the entry.
+            val lengthRatio = if (entry.trigramCount > 0) querySize.toDouble() / entry.trigramCount else 1.0
+            val dampenedContainment = containment * minOf(1.0, lengthRatio + 0.3)
+            val score = maxOf(jaccard, dampenedContainment)
 
             val existing = seen[entry.normStripped]
             if (existing == null || score > existing.score ||
@@ -100,6 +117,7 @@ class TrigramIndex {
                 val group = groups[entry.normStripped]
                 seen[entry.normStripped] = ScoredGroup(
                     score = score,
+                    containment = containment,
                     bestName = group?.bestName ?: entry.rawName,
                     popularity = group?.bestPopularity ?: entry.popularity,
                 )
@@ -116,6 +134,8 @@ class TrigramIndex {
                     bggIds = group?.bggIds?.toList() ?: emptyList(),
                     name = scored.bestName,
                     score = scored.score,
+                    containment = scored.containment,
+                    popularity = scored.popularity,
                 )
             }
     }
@@ -124,6 +144,7 @@ class TrigramIndex {
 
     private class ScoredGroup(
         val score: Double,
+        val containment: Double,
         val bestName: String,
         val popularity: Int,
     )

@@ -11,6 +11,13 @@ data class Thresholds(
     val greenLead: Double,
     val greenFrames: Int,
     val greenSingle: Double,
+    /** Confident single read: lower score threshold but needs large lead and popular game. */
+    val confidentLead: Double,
+    val confidentMinScore: Double,
+    val confidentMinPopularity: Int,
+    val greenMinTextLength: Int,
+    /** Short text (below greenMinTextLength * 2) needs this many votes to go green. */
+    val shortTextMinPopularity: Int,
     val orangeFloor: Double,
     /** How long the API client collects miss texts before sending a batch. */
     val apiBatchMs: Long,
@@ -35,6 +42,11 @@ data class Thresholds(
                 greenLead = props.require("green.lead").toDouble(),
                 greenFrames = props.require("green.frames").toInt(),
                 greenSingle = props.require("green.single").toDouble(),
+                confidentLead = props.require("green.confidentLead").toDouble(),
+                confidentMinScore = props.require("green.confidentMinScore").toDouble(),
+                confidentMinPopularity = props.require("green.confidentMinPopularity").toInt(),
+                greenMinTextLength = props.require("green.minTextLength").toInt(),
+                shortTextMinPopularity = props.require("green.shortTextMinPopularity").toInt(),
                 orangeFloor = props.require("orange.floor").toDouble(),
                 apiBatchMs = props.require("api.batch.ms").toLong(),
                 apiRetryMs = props.require("api.retry.ms").toLong(),

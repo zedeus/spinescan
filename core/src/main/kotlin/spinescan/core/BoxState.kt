@@ -67,8 +67,12 @@ class BoxState(
             return
         }
 
-        // Short reads (3 chars or fewer) never go green
-        val allShort = reads.all { it.text.length <= 3 }
+        // Short reads never go green — configurable minimum length
+        val allShort = reads.all { it.text.length < thresholds.greenMinTextLength }
+        // Short-ish text (below 3x minLength, i.e. under 12 chars) requires the matched
+        // game to be popular enough that it's plausibly the real game and not a fragment match.
+        // This catches "ORIGINAL" (8), "CONFLICT" (8), "LISTicles" (9) as fragments.
+        val shortish = reads.all { it.text.length < thresholds.greenMinTextLength * 3 }
 
         // Group reads by candidate (by bggIds set)
         val candidateVotes = mutableMapOf<Set<Int>, CandidateVote>()
@@ -120,12 +124,23 @@ class BoxState(
             // Short reads never go green
             allShort -> BoxColour.ORANGE
 
+            // Short-ish reads need a popular game to go green (filters fragment matches
+            // like "PEST" → Pest (2 votes) while allowing "Risk" → Risk (39k votes))
+            shortish && (best.candidate.popularity < thresholds.shortTextMinPopularity) -> BoxColour.ORANGE
+
             // Disagreeing frames: different candidates with enough votes
             runnerUp != null && runnerUp.count >= thresholds.greenFrames -> BoxColour.ORANGE
 
             // Very high single read (no multi-frame needed)
             best.bestScore >= thresholds.greenSingle &&
                 lead >= thresholds.greenLead -> BoxColour.GREEN
+
+            // Confident single read: lower score but large lead and popular game.
+            // "TERRAFORMIN MARS" at 0.88 with 0.20 lead over runner-up is clearly
+            // Terraforming Mars, not a random game with a similar name.
+            best.bestScore >= thresholds.confidentMinScore &&
+                lead >= thresholds.confidentLead &&
+                best.candidate.popularity >= thresholds.confidentMinPopularity -> BoxColour.GREEN
 
             // Multi-frame agreement
             best.bestScore >= thresholds.greenScore &&

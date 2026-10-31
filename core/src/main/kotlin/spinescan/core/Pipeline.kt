@@ -67,10 +67,10 @@ class Pipeline(
             val state = BoxState(boxId, thresholds, aliasProvider, clock)
             boxStates[boxId] = state
 
-            // Normalise and look up
+            // Normalise and look up using multi-strategy matching
             val normText = Normalize.normalize(spineBox.text)
             val candidates = if (normText.isNotBlank()) {
-                pack.index.lookup(normText)
+                TextMatcher.matchAll(spineBox.text, pack.index)
             } else {
                 emptyList()
             }
