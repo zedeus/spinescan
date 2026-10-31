@@ -1,0 +1,22 @@
+harness/src/main/kotlin/spinescan/harness/Main.kt
+  s_fb85e356e1da57::t_ad6e5faa76f054 278-284
+  s_fb85e356e1da57::t_523c49c1340548 61,70-71,81-91
+harness/src/main/kotlin/spinescan/harness/FullDbLoader.kt
+  s_fb85e356e1da57::t_c1be79cf960d07 1-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c8387f87aa5f392cbcee2e8b2dd58e12abaddf33",
+  "prompts": {},
+  "sessions": {
+    "s_fb85e356e1da57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c646ba5-28b7-4c78-8c5f-33bf6263768b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
