@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 java {
@@ -15,6 +16,7 @@ kotlin {
 
 dependencies {
     implementation(libs.sqlite.jdbc)
+    implementation(libs.serialization.json)
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
     testImplementation(libs.kotlin.test)

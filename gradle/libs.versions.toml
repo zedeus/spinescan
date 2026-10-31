@@ -6,6 +6,7 @@ sqlite-jdbc = "3.46.1.0"
 rapidocr = "0.0.7"
 rapidocr-native = "1.2.2"
 onnxruntime = "1.21.0"
+serialization = "1.7.3"
 compileSdk = "36"
 minSdk = "26"
 targetSdk = "36"
@@ -15,6 +16,7 @@ jvmTarget = "17"
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 rapidocr = { module = "io.github.mymonstercat:rapidocr", version.ref = "rapidocr" }
 rapidocr-onnx-models = { module = "io.github.mymonstercat:rapidocr-onnx-models", version.ref = "rapidocr-native" }
@@ -24,4 +26,5 @@ onnxruntime = { module = "com.microsoft.onnxruntime:onnxruntime", version.ref = 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }

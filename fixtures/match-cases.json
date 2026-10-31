@@ -1,0 +1,82 @@
+{
+  "comment": "Shared matcher fixture: hand-invented games, never real dump rows. Both the Kotlin matcher and the API's TypeScript matcher must return the same top candidate for every case. Queries are raw (pre-normalisation) text.",
+  "games": [
+    {
+      "bgg_id": 1,
+      "name": "Harbour Masters",
+      "year": 1998,
+      "num_votes": 50000,
+      "names": [
+        { "name": "Harbour Masters", "is_primary": true },
+        { "name": "Les Maîtres du Port", "is_primary": false },
+        { "name": "Die Hafenmeister", "is_primary": false }
+      ]
+    },
+    {
+      "bgg_id": 2,
+      "name": "Harbour Masters: Storm Tide",
+      "year": 2003,
+      "num_votes": 8000,
+      "names": [{ "name": "Harbour Masters: Storm Tide", "is_primary": true }]
+    },
+    {
+      "bgg_id": 3,
+      "name": "Söldner der Nebelstadt",
+      "year": 2011,
+      "num_votes": 3000,
+      "names": [
+        { "name": "Söldner der Nebelstadt", "is_primary": true },
+        { "name": "Mercenaries of Mist City", "is_primary": false }
+      ]
+    },
+    {
+      "bgg_id": 4,
+      "name": "Quiet Meadow",
+      "year": 2015,
+      "num_votes": 12000,
+      "names": [
+        { "name": "Quiet Meadow", "is_primary": true },
+        { "name": "Quiet Meadow: Deluxe Edition", "is_primary": false }
+      ]
+    },
+    {
+      "bgg_id": 5,
+      "name": "Quiet Meadows of Avalon",
+      "year": 2019,
+      "num_votes": 900,
+      "names": [{ "name": "Quiet Meadows of Avalon", "is_primary": true }]
+    },
+    {
+      "bgg_id": 6,
+      "name": "Starlight Couriers",
+      "year": 2020,
+      "num_votes": 25000,
+      "names": [
+        { "name": "Starlight Couriers", "is_primary": true },
+        { "name": "Kuriéři hvězdné oblohy", "is_primary": false }
+      ]
+    },
+    {
+      "bgg_id": 7,
+      "name": "Caverns & Catapults",
+      "year": 2008,
+      "num_votes": 40000,
+      "names": [{ "name": "Caverns & Catapults", "is_primary": true }]
+    }
+  ],
+  "cases": [
+    { "query": "Harbour Masters", "top_bgg_id": 1 },
+    { "query": "harbour mastrs", "top_bgg_id": 1 },
+    { "query": "Les Maîtres du Port", "top_bgg_id": 1 },
+    { "query": "Les Maitres du Port", "top_bgg_id": 1 },
+    { "query": "Die Hafenmeister", "top_bgg_id": 1 },
+    { "query": "Harbour Masters Storm Tide", "top_bgg_id": 2 },
+    { "query": "Mercenaries of Mist City", "top_bgg_id": 3 },
+    { "query": "Soldner der Nebelstadt", "top_bgg_id": 3 },
+    { "query": "Quiet Meadow Deluxe Edition", "top_bgg_id": 4 },
+    { "query": "Quiet Meadows of Avalon", "top_bgg_id": 5 },
+    { "query": "Kurieri hvezdne oblohy", "top_bgg_id": 6 },
+    { "query": "CAVERNS AND CATAPULTS", "top_bgg_id": 7 },
+    { "query": "caverns catapults", "top_bgg_id": 7 }
+  ]
+}

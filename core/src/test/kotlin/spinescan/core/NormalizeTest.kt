@@ -19,7 +19,7 @@ class NormalizeTest {
 
     private fun loadFixture(): List<FixtureRow> {
         // Find fixtures/normalize.csv relative to project root
-        val file = findFixtureFile()
+        val file = TestFixtures.find("fixtures/normalize.csv")
         val lines = file.readLines()
         val header = lines[0]
         require("input" in header) { "Unexpected header: $header" }
@@ -32,17 +32,6 @@ class NormalizeTest {
                 editionWords = if (fields[3].isBlank()) emptyList() else fields[3].split(" "),
             )
         }
-    }
-
-    private fun findFixtureFile(): File {
-        // Walk up from working directory to find fixtures/
-        var dir = File(System.getProperty("user.dir"))
-        while (dir.parent != null) {
-            val f = File(dir, "fixtures/normalize.csv")
-            if (f.exists()) return f
-            dir = dir.parentFile
-        }
-        error("fixtures/normalize.csv not found")
     }
 
     /** Minimal CSV parser that handles quoted fields. */
