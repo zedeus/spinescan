@@ -7,7 +7,8 @@ import java.sql.DriverManager
 
 /**
  * Loads the full games.db (135k games, 207k names) into a TrigramIndex
- * for harness use. The phone uses the 10k pack; the harness searches everything.
+ * for harness use. The phone's pack has every game but only primary names;
+ * the harness searches all names directly.
  */
 object FullDbLoader {
 
@@ -18,8 +19,7 @@ object FullDbLoader {
             val games = mutableMapOf<Int, PackLoader.PackGame>()
             c.createStatement().use { stmt ->
                 stmt.executeQuery("""
-                    SELECT bgg_id, name, year, is_expansion, base_game_id,
-                           num_votes, avg_rating, rank, image_url
+                    SELECT bgg_id, name, year, num_votes
                     FROM games
                 """).use { rs ->
                     while (rs.next()) {
@@ -28,19 +28,7 @@ object FullDbLoader {
                             bggId = bggId,
                             name = rs.getString("name"),
                             year = rs.getObject("year")?.let { (it as Number).toInt() },
-                            isExpansion = rs.getInt("is_expansion") == 1,
-                            baseGameId = rs.getObject("base_game_id")?.let { (it as Number).toInt() },
-                            minPlayers = null,
-                            maxPlayers = null,
-                            minPlayersBest = null,
-                            maxPlayersBest = null,
-                            minTime = null,
-                            maxTime = null,
-                            complexity = null,
-                            avgRating = rs.getObject("avg_rating")?.let { (it as Number).toDouble() },
                             numVotes = rs.getObject("num_votes")?.let { (it as Number).toInt() } ?: 0,
-                            rank = rs.getObject("rank")?.let { (it as Number).toInt() },
-                            imageUrl = rs.getString("image_url"),
                         )
                     }
                 }
