@@ -1,0 +1,54 @@
+core/build.gradle.kts
+  s_273d0c7ce55aaa::t_a5d8f8c01bd338 11-13
+  s_273d0c7ce55aaa::t_b444cc94167374 1-4,10,14-24
+  s_273d0c7ce55aaa::t_2e707db7b6d99c 5-9
+harness/build.gradle.kts
+  s_273d0c7ce55aaa::t_4eea9bb8e4dbe4 10-14
+  s_273d0c7ce55aaa::t_e688c051408d69 16-18
+  s_273d0c7ce55aaa::t_bb74e59fb7b211 1-9,15,19-30
+settings.gradle.kts
+  s_273d0c7ce55aaa::t_4f524e2ef0b605 1-9,11-18
+  s_273d0c7ce55aaa::t_e80a69da0fd685 10
+gradle/wrapper/gradle-wrapper.properties
+  s_273d0c7ce55aaa::t_4fa3bf9cb6b475 1-7
+harness/src/main/kotlin/spinescan/harness/Main.kt
+  s_273d0c7ce55aaa::t_b33135b946d314 1-8
+gradlew.bat
+  s_273d0c7ce55aaa::t_0689564face3a5 1-94
+core/src/main/kotlin/spinescan/core/Thresholds.kt
+  s_273d0c7ce55aaa::t_9e9b5d65ae188d 1-39
+app/build.gradle.kts
+  s_273d0c7ce55aaa::t_9fa54a6bdca194 1-30
+harness/src/test/kotlin/spinescan/harness/MainTest.kt
+  s_273d0c7ce55aaa::t_0e2609c22d24da 1-14
+core/src/main/resources/thresholds.properties
+  s_273d0c7ce55aaa::t_d7303dd05fc0e1 1-13
+app/src/main/kotlin/spinescan/app/App.kt
+  s_273d0c7ce55aaa::t_2ef1c956a54dc4 1-5
+build.gradle.kts
+  s_273d0c7ce55aaa::t_cd3e89ffd9abb1 1-5
+gradlew
+  s_273d0c7ce55aaa::t_0689564face3a5 1-251
+gradle/libs.versions.toml
+  s_273d0c7ce55aaa::t_cc7f8c7e9922fb 1-18
+core/src/test/kotlin/spinescan/core/ThresholdsTest.kt
+  s_273d0c7ce55aaa::t_6d9a3be18bc2aa 1-26
+app/src/main/AndroidManifest.xml
+  s_273d0c7ce55aaa::t_ded66f350721e5 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "801087df54ec1f219cff688ebf8375d9e114b504",
+  "prompts": {},
+  "sessions": {
+    "s_273d0c7ce55aaa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3dc037d3-6b13-4ddb-8d45-63fd51cfecb1",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
