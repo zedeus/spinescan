@@ -1,0 +1,22 @@
+core/src/main/kotlin/spinescan/core/BoxGrouper.kt
+  s_fb85e356e1da57::t_cbd914aa04de7e 19-20
+  s_fb85e356e1da57::t_dc44e141c67bce 92-96
+core/src/test/kotlin/spinescan/core/BoxGrouperTest.kt
+  s_fb85e356e1da57::t_6f958c96d85f70 94-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a41b00177376fa900f84f1b79b5e8bdc1789a706",
+  "prompts": {},
+  "sessions": {
+    "s_fb85e356e1da57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c646ba5-28b7-4c78-8c5f-33bf6263768b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
