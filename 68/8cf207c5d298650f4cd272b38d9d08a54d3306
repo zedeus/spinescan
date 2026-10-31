@@ -1,0 +1,44 @@
+.gitignore
+  s_fb85e356e1da57::t_1646ef72545022 22-24
+gradle/libs.versions.toml
+  s_fb85e356e1da57::t_1646ef72545022 6-8,19-22
+harness/src/main/kotlin/spinescan/harness/PpOcrEngine.kt
+  s_fb85e356e1da57::t_208cdec0e4ca5c 138
+  s_fb85e356e1da57::t_b557d113115a62 336-337
+  s_fb85e356e1da57::t_99a707aa87ad45 220-221
+  s_fb85e356e1da57::t_5d1e6cfe307961 391-395
+  s_fb85e356e1da57::t_a5b91ac8d7af08 10
+  s_fb85e356e1da57::t_68d5e3f5f789c5 147-148
+  s_fb85e356e1da57::t_45050c24821a70 27
+  s_fb85e356e1da57::t_467b527bf0ec93 40
+  s_fb85e356e1da57::t_a0d6ad1594ac13 1-9,11-26,28-39,41-137,139-146,149-219,222-335,338-390,396-404
+harness/build.gradle.kts
+  s_fb85e356e1da57::t_1646ef72545022 23
+harness/src/main/kotlin/spinescan/harness/FrameSource.kt
+  s_fb85e356e1da57::t_34b21fdff81977 1-201
+harness/src/main/kotlin/spinescan/harness/Main.kt
+  s_fb85e356e1da57::t_1646ef72545022 3-9,12-68,72,74-84,86-267
+  s_fb85e356e1da57::t_d1d976bdc8a9f8 69-71,73
+harness/src/test/kotlin/spinescan/harness/PpOcrEngineTest.kt
+  s_fb85e356e1da57::t_3daf243ffbf979 1-13,18-32,34-53,58-62,65,68-72,74-85,88-89
+  s_fb85e356e1da57::t_57a6919e717bcf 14-17,33,54-57,63-64,66-67,73,86-87
+harness/src/main/kotlin/spinescan/harness/OcrModels.kt
+  s_fb85e356e1da57::t_f9b87aa23160ca 21,24-25,30-31,33,38,40
+  s_fb85e356e1da57::t_85e31f4c9b5a6f 1-20,22-23,26-29,32,34-37,39,41-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "688cf207c5d298650f4cd272b38d9d08a54d3306",
+  "prompts": {},
+  "sessions": {
+    "s_fb85e356e1da57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c646ba5-28b7-4c78-8c5f-33bf6263768b",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
