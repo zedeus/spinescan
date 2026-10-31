@@ -1,0 +1,32 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# Android
+*.keystore
+*.jks
+
+# Private data — never commit (repo is public)
+testset/
+data/
+board-game-data/
+*.db
+*.pack
+*.spinescan-pack
+
+# Eval output
+eval-output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python (tools/)
+__pycache__/
+*.pyc
+.venv/
