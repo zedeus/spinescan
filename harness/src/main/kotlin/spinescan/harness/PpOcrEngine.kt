@@ -31,10 +31,11 @@ class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
     private val recSession: OrtSession
     private val dictionary: List<String>
 
-    // Detection parameters
+    // Detection parameters — thresholds lowered from PP-OCR defaults (0.3/0.5)
+    // to catch stylised game box text that produces weaker detection signals.
     private val detMaxSide = 960
-    private val detThreshold = 0.3f
-    private val boxThreshold = 0.5f
+    private val detThreshold = 0.2f
+    private val boxThreshold = 0.35f
     private val minBoxSize = 5
 
     // Recognition parameters — PP-OCRv3 English uses height 48
@@ -422,14 +423,16 @@ class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
 
             // Skip blank (index 0) and consecutive duplicates
             if (maxIdx != 0 && maxIdx != lastIdx) {
-                // Dictionary index: maxIdx - 1 (0 is blank)
                 val dictIdx = maxIdx - 1
                 if (dictIdx in dictionary.indices) {
                     sb.append(dictionary[dictIdx])
-                    // Softmax for confidence estimate
-                    val expMax = kotlin.math.exp(maxVal.toDouble()).toFloat()
-                    val expSum = step.sumOf { kotlin.math.exp(it.toDouble()) }.toFloat()
-                    totalConf += expMax / expSum
+                    // Log-sum-exp softmax (numerically stable with 18k classes)
+                    var logSumExp = 0.0
+                    for (v in step) {
+                        logSumExp += kotlin.math.exp((v - maxVal).toDouble())
+                    }
+                    val conf = (1.0 / logSumExp).toFloat()
+                    totalConf += conf
                     charCount++
                 }
             }
