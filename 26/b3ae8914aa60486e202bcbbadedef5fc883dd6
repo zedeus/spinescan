@@ -1,0 +1,24 @@
+harness/src/main/kotlin/spinescan/harness/PpOcrEngine.kt
+  s_fb85e356e1da57::t_e178ae06bc4622 151
+  s_fb85e356e1da57::t_53afa346b81d14 114-115,117-121,127-130
+  s_fb85e356e1da57::t_a51d281dfa0b45 113
+  s_fb85e356e1da57::t_dc38ca4f8ccceb 69-72,74
+  s_fb85e356e1da57::t_16128fbec3d4f3 139
+  s_fb85e356e1da57::t_9a60c295ffc7bf 108-112,123,140-150,159-160,173,182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "26b3ae8914aa60486e202bcbbadedef5fc883dd6",
+  "prompts": {},
+  "sessions": {
+    "s_fb85e356e1da57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5c646ba5-28b7-4c78-8c5f-33bf6263768b",
+        "model": "metr-model"
+      },
+      "human_author": null
+    }
+  }
+}
