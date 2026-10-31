@@ -12,6 +12,12 @@ data class Thresholds(
     val greenFrames: Int,
     val greenSingle: Double,
     val orangeFloor: Double,
+    /** How long the API client collects miss texts before sending a batch. */
+    val apiBatchMs: Long,
+    /** How long the API client waits after a network failure before retrying. */
+    val apiRetryMs: Long,
+    /** HTTP connect/read timeout for API calls. */
+    val apiTimeoutMs: Long,
 ) {
     companion object {
         private const val RESOURCE = "/thresholds.properties"
@@ -30,6 +36,9 @@ data class Thresholds(
                 greenFrames = props.require("green.frames").toInt(),
                 greenSingle = props.require("green.single").toDouble(),
                 orangeFloor = props.require("orange.floor").toDouble(),
+                apiBatchMs = props.require("api.batch.ms").toLong(),
+                apiRetryMs = props.require("api.retry.ms").toLong(),
+                apiTimeoutMs = props.require("api.timeout.ms").toLong(),
             )
         }
 

@@ -14,6 +14,9 @@ class BoxStateTest {
         greenFrames = 2,
         greenSingle = 0.97,
         orangeFloor = 0.60,
+        apiBatchMs = 300,
+        apiRetryMs = 5000,
+        apiTimeoutMs = 10000,
     )
 
     private fun catan(score: Double = 0.95) = TrigramIndex.Candidate(

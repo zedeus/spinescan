@@ -8,7 +8,9 @@ package spinescan.core
  */
 class Pipeline(
     private val ocrEngine: OcrEngine,
-    private val pack: PackLoader.Pack,
+    /** The current pack. Swappable mid-sweep: existing box states keep
+     *  their reads and colours; only future lookups use the new index. */
+    var pack: PackLoader.Pack,
     private val thresholds: Thresholds,
     private val aliasProvider: AliasProvider = AliasProvider.EMPTY,
     private val clock: () -> Long = System::currentTimeMillis,
