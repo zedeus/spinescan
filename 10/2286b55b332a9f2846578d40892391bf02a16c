@@ -1,0 +1,75 @@
+core/src/main/resources/thresholds.properties
+  s_8f122b7107cca4::t_dc1718b47d5412 8-11
+  s_8f122b7107cca4::t_3291697ee35519 5
+  s_8f122b7107cca4::t_d30c346f9df008 12-13
+  s_8f122b7107cca4::t_81e5897c6d79b9 16
+core/src/test/kotlin/spinescan/core/ThresholdsTest.kt
+  s_8f122b7107cca4::t_f57b9adbce48a0 19-20
+  s_8f122b7107cca4::t_05e3acebfe59c8 15-18
+  s_8f122b7107cca4::t_0bbff8abb60816 21
+  s_8f122b7107cca4::t_7e4c2d13e937b0 12
+core/src/main/kotlin/spinescan/core/TrigramIndex.kt
+  s_8f122b7107cca4::t_a501df42de9886 19-20
+  s_8f122b7107cca4::t_2ffc597d3ccb43 17-18
+  s_8f122b7107cca4::t_a4b79ee3a91617 96,98-110,120
+  s_8f122b7107cca4::t_d032b4b7875d72 111
+  s_8f122b7107cca4::t_cdd2f5122fa296 137
+  s_8f122b7107cca4::t_08fcd054b4586d 138
+  s_8f122b7107cca4::t_8c3e7e945a77d6 147
+core/src/main/kotlin/spinescan/core/Thresholds.kt
+  s_8f122b7107cca4::t_51a7b6a318850d 18
+  s_8f122b7107cca4::t_2483909eb5663b 19-20
+  s_8f122b7107cca4::t_2844c7b09ef761 45-47
+  s_8f122b7107cca4::t_1775315a62cd3f 14-17
+  s_8f122b7107cca4::t_6a0a78025fbe32 49
+  s_8f122b7107cca4::t_34d91e0b396d85 48
+core/src/test/kotlin/spinescan/core/api/PackSwapTest.kt
+  s_8f122b7107cca4::t_ee2ec6bd513efc 24-25
+  s_8f122b7107cca4::t_caadd16abfca63 23
+  s_8f122b7107cca4::t_197faf3c7eb7d9 26
+  s_8f122b7107cca4::t_e40a93621cbb9a 43-44
+  s_8f122b7107cca4::t_0d30c062ae643a 46,51,56
+  s_8f122b7107cca4::t_686494801e90ff 36,38
+core/src/test/kotlin/spinescan/core/BoxStateTest.kt
+  s_8f122b7107cca4::t_5448ad6179c71f 128-129
+  s_8f122b7107cca4::t_7e4c2d13e937b0 12
+  s_8f122b7107cca4::t_4c4bc8ad506180 149-150,157-158
+  s_8f122b7107cca4::t_f369ae9ca63f94 181-182,192-193,204-205,213-214,223,226,235,238-239
+  s_8f122b7107cca4::t_05e3acebfe59c8 15
+  s_8f122b7107cca4::t_8a061c5157222e 19-20
+  s_8f122b7107cca4::t_3e78563cf3b62f 16-18
+  s_8f122b7107cca4::t_b29b3dd2fd2272 165,172
+  s_8f122b7107cca4::t_2a9fc477dffa6d 108-111,120-121,136-137
+  s_8f122b7107cca4::t_14adff41f366d1 211,220,222
+  s_8f122b7107cca4::t_0bbff8abb60816 21
+core/src/main/kotlin/spinescan/core/TextMatcher.kt
+  s_8f122b7107cca4::t_c08c45b9c9f7cd 1-8,13-29,42-43,45-47,49-51,68-69,71-72,74-77,80-90,95-97,99,105-106,112-113,136,138-139
+  s_8f122b7107cca4::t_a7d0188ff948a4 9-12,30,44,48,52-67,73,91-94,98,100-104,107-111,114-135,137
+  s_8f122b7107cca4::t_187a636d3273de 37-39,41
+  s_8f122b7107cca4::t_86ab329080e434 70,78-79
+  s_8f122b7107cca4::t_489610d6e67e1a 31-36,40
+core/src/main/kotlin/spinescan/core/BoxState.kt
+  s_8f122b7107cca4::t_3473289d0c4b1d 70
+  s_8f122b7107cca4::t_d9b3bd1de0b96e 127-130
+  s_8f122b7107cca4::t_90619feb882c85 138-144
+  s_8f122b7107cca4::t_e6832cb231aae7 72-75
+  s_8f122b7107cca4::t_83bf5065ca9d8b 71
+core/src/main/kotlin/spinescan/core/Pipeline.kt
+  s_8f122b7107cca4::t_cebd7b06bb8fa5 70,73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "102286b55b332a9f2846578d40892391bf02a16c",
+  "prompts": {},
+  "sessions": {
+    "s_8f122b7107cca4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9c29538-8b20-486d-b066-a8b18a5cfb4d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
