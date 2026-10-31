@@ -1,0 +1,42 @@
+harness/src/main/kotlin/spinescan/harness/FullDbLoader.kt
+  s_64840a3f443e48::t_6a33ada482d5eb 10-11
+  s_64840a3f443e48::t_0f7295dccb1295 22
+tools/tests/test_build_pack.py
+  s_64840a3f443e48::t_140c457e5b5d82 1-10,12-37,39-40,43-44,47-49,52-99
+  s_64840a3f443e48::t_2efc7e280743a0 11
+  s_64840a3f443e48::t_9308df5d1b27c4 38,41-42,45-46,50-51
+docs/pack-format.md
+  s_64840a3f443e48::t_73c63fc65ab18c 3-7,9,13,18-19,29-33,38-39
+  s_64840a3f443e48::t_15d124a63dab20 34
+  s_64840a3f443e48::t_bda6160a9c0932 40-41
+core/src/test/kotlin/spinescan/core/PackLoaderTest.kt
+  s_64840a3f443e48::t_a530519c6f37da 1-35
+core/src/main/kotlin/spinescan/core/PackLoader.kt
+  s_64840a3f443e48::t_5af603303ef83a 8-11,15-16,44,47-48,51,54-56,59-66,69,72
+tools/build_all.py
+  s_64840a3f443e48::t_933a2b3a52a051 5
+  s_64840a3f443e48::t_adad36e6e9291f 20
+  s_64840a3f443e48::t_2fcf2d6d2b3e37 44
+core/src/test/kotlin/spinescan/core/api/TestPacks.kt
+  s_64840a3f443e48::t_1b297daf5a63db 1-63
+tools/build_pack.py
+  s_64840a3f443e48::t_ed20a8b963e505 52
+  s_64840a3f443e48::t_fb401b45707ee1 18
+  s_64840a3f443e48::t_65e9492386aae6 2,4-7,10,20,31,33-34,39-40,44,48,50,53,55-56,60-61,63,68-75,79,98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ef2e951fcc80a041f6817f50b626f4a2f3a68a54",
+  "prompts": {},
+  "sessions": {
+    "s_64840a3f443e48": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2285c2c1-d952-4ee3-80c0-ac96be12523d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
