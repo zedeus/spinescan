@@ -1,0 +1,20 @@
+core/src/main/kotlin/spinescan/core/BoxState.kt
+  s_8f122b7107cca4::t_6d62f89830ef8a 117
+  s_8f122b7107cca4::t_34518e61de071a 108-111,113-116,118-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8bd481cfc9e0ad2b827e7eb8b1567bbb15997e62",
+  "prompts": {},
+  "sessions": {
+    "s_8f122b7107cca4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9c29538-8b20-486d-b066-a8b18a5cfb4d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
