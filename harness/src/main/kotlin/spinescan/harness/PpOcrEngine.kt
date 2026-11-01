@@ -24,7 +24,13 @@ import kotlin.math.roundToInt
  *
  * Pipeline: Detection (DBNet) → Crop text regions → Recognition (CRNN + CTC)
  */
-class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
+class PpOcrEngine(
+    modelDir: File,
+    /** Optional: use a different recognition model file. */
+    recModelFile: File? = null,
+    /** Optional: use a different dictionary file. */
+    dictFile: File? = null,
+) : OcrEngine, Closeable {
 
     private val env = OrtEnvironment.getEnvironment()
     private val detSession: OrtSession
@@ -48,8 +54,8 @@ class PpOcrEngine(modelDir: File) : OcrEngine, Closeable {
 
     init {
         val detPath = File(modelDir, OcrModels.DET.filename).absolutePath
-        val recPath = File(modelDir, OcrModels.REC.filename).absolutePath
-        val dictPath = File(modelDir, OcrModels.DICT_FILENAME).absolutePath
+        val recPath = (recModelFile ?: File(modelDir, OcrModels.REC.filename)).absolutePath
+        val dictPath = (dictFile ?: File(modelDir, OcrModels.DICT_FILENAME)).absolutePath
 
         require(File(detPath).exists()) { "Detection model not found: $detPath" }
         require(File(recPath).exists()) { "Recognition model not found: $recPath" }

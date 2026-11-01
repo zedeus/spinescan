@@ -205,5 +205,67 @@ class OcrExperiment(
         return result
     }
 
+    /**
+     * CLAHE-like adaptive contrast enhancement.
+     * Divides the image into tiles and equalizes contrast within each tile,
+     * then interpolates between tiles. Much better than global contrast for
+     * photos with uneven lighting.
+     */
+    fun adaptiveContrast(img: BufferedImage, tileSize: Int = 64, clipLimit: Double = 2.0): BufferedImage {
+        val gray = toGrayscale(img)
+        val w = img.width
+        val h = img.height
+        val result = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+
+        // Simple approach: apply local histogram equalization
+        for (ty in 0 until h step tileSize) {
+            for (tx in 0 until w step tileSize) {
+                val tw = minOf(tileSize, w - tx)
+                val th = minOf(tileSize, h - ty)
+
+                // Build histogram for this tile
+                val hist = IntArray(256)
+                for (y in ty until ty + th) {
+                    for (x in tx until tx + tw) {
+                        hist[gray.getRGB(x, y) and 0xFF]++
+                    }
+                }
+
+                // Clip histogram (CLAHE) and redistribute
+                val pixels = tw * th
+                val limit = (clipLimit * pixels / 256).toInt()
+                var excess = 0
+                for (i in 0 until 256) {
+                    if (hist[i] > limit) {
+                        excess += hist[i] - limit
+                        hist[i] = limit
+                    }
+                }
+                val addPerBin = excess / 256
+                for (i in 0 until 256) hist[i] += addPerBin
+
+                // Build CDF
+                val cdf = IntArray(256)
+                cdf[0] = hist[0]
+                for (i in 1 until 256) cdf[i] = cdf[i - 1] + hist[i]
+                val cdfMin = cdf.firstOrNull { it > 0 } ?: 0
+                val total = cdf[255]
+
+                // Apply equalization
+                for (y in ty until ty + th) {
+                    for (x in tx until tx + tw) {
+                        val v = gray.getRGB(x, y) and 0xFF
+                        val eq = if (total > cdfMin) {
+                            ((cdf[v] - cdfMin).toDouble() / (total - cdfMin) * 255).toInt()
+                        } else v
+                        val c = clamp(eq)
+                        result.setRGB(x, y, (c shl 16) or (c shl 8) or c)
+                    }
+                }
+            }
+        }
+        return result
+    }
+
     private fun clamp(v: Int): Int = maxOf(0, minOf(255, v))
 }

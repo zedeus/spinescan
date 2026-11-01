@@ -359,6 +359,18 @@ class Eval(
 
     private val preprocess = OcrExperiment(ocrEngine, pack.index)
 
+    // Secondary OCR engine with English-only v3 recognition model.
+    // Simpler vocab (97 chars vs 18k) often reads English board game text more cleanly.
+    private val enOcrEngine: PpOcrEngine? = run {
+        val modelsDir = OcrModels.defaultModelDir()
+        val enRec = File(modelsDir, "en_PP-OCRv3_rec_infer.onnx")
+        val enDict = File(modelsDir, "en_dict.txt")
+        if (enRec.exists() && enDict.exists()) {
+            try { PpOcrEngine(modelsDir, recModelFile = enRec, dictFile = enDict) }
+            catch (_: Exception) { null }
+        } else null
+    }
+
     /**
      * Crop a box region from the image and re-OCR with multiple preprocessing
      * strategies. Returns the best text across all strategies, or null.
@@ -387,18 +399,20 @@ class Eval(
             crop = preprocess.upscale(crop, 200.0 / minDim)
         }
 
-        // Try multiple preprocessing strategies and pick the best match
-        val variants = mutableListOf<BufferedImage>()
-        variants.add(crop)                                    // raw
-        variants.add(preprocess.rotate270(crop))              // for upright spines
-        variants.add(preprocess.toGrayscale(crop))            // cleaner signal
-        variants.add(preprocess.enhanceContrast(crop, 1.5))   // faded text
-        variants.add(preprocess.invert(crop))                 // light text on dark
+        // Try multiple preprocessing strategies and OCR engines, pick the best match
+        val variants = mutableListOf<Pair<String, BufferedImage>>()
+        variants.add("raw" to crop)
+        variants.add("rot270" to preprocess.rotate270(crop))
+        variants.add("gray" to preprocess.toGrayscale(crop))
+        variants.add("contrast" to preprocess.enhanceContrast(crop, 1.5))
+        variants.add("invert" to preprocess.invert(crop))
+        variants.add("clahe" to preprocess.adaptiveContrast(crop))
 
         data class ReadAttempt(val text: String, val score: Double, val name: String?, val pop: Int)
         val attempts = mutableListOf<ReadAttempt>()
 
-        for (variant in variants) {
+        // Try each variant with the main (v6 multilingual) engine
+        for ((_, variant) in variants) {
             val lines = ocrEngine.detectFromImage(variant)
             if (lines.isEmpty()) continue
             val text = lines.sortedByDescending { it.confidence }
@@ -413,6 +427,27 @@ class Eval(
                 name = top?.name,
                 pop = top?.popularity ?: 0,
             ))
+        }
+
+        // Also try the English v3 engine on key variants (raw, rot270, gray)
+        // The English-only vocab often reads Latin text more cleanly.
+        if (enOcrEngine != null) {
+            for ((tag, variant) in variants.take(3)) {
+                val lines = enOcrEngine.detectFromImage(variant)
+                if (lines.isEmpty()) continue
+                val text = lines.sortedByDescending { it.confidence }
+                    .joinToString(" ") { it.text }.trim()
+                if (text.length < 3) continue
+
+                val candidates = TextMatcher.matchAll(text, pack.index)
+                val top = candidates.firstOrNull()
+                attempts.add(ReadAttempt(
+                    text = text,
+                    score = top?.score ?: 0.0,
+                    name = top?.name,
+                    pop = top?.popularity ?: 0,
+                ))
+            }
         }
 
         if (attempts.isEmpty()) return null
