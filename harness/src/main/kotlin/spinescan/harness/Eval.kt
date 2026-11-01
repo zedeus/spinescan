@@ -189,10 +189,24 @@ class Eval(
 
         val frame = frames[0]
 
-        // Run pipeline
+        // Run pipeline — also do a rotated OCR pass and group its results
+        // separately, so we can use rotated reads to supplement non-green boxes.
         val grouper = BoxGrouper()
         val textLines = ocrEngine.detectFromImage(frame.image)
         val spineBoxes = grouper.group(textLines)
+
+        // Rotated pass: OCR the 270°-rotated image to catch upright spines.
+        // Group separately and index by position for matching to original boxes.
+        val rot270 = preprocess.rotate270(frame.image)
+        val rotLines = ocrEngine.detectFromImage(rot270)
+        val rotBoxes = grouper.group(rotLines)
+        // Map rotated box centers back to original image coordinates
+        data class RotatedRead(val text: String, val origCenterX: Int, val origCenterY: Int)
+        val rotatedReads = rotBoxes.map { rb ->
+            val cx = rb.box.y + rb.box.height / 2
+            val cy = frame.image.width - rb.box.x - rb.box.width / 2
+            RotatedRead(rb.text, cx, cy)
+        }
 
         val boxes = spineBoxes.map { spineBox ->
             val normText = Normalize.normalize(spineBox.text)
@@ -202,6 +216,35 @@ class Eval(
 
             val state = BoxState(0, thresholds)
             state.addRead(normText, candidates)
+
+            // Supplementary: find rotated reads that overlap this box
+            if (state.colour != BoxColour.GREEN) {
+                val boxCx = spineBox.box.x + spineBox.box.width / 2
+                val boxCy = spineBox.box.y + spineBox.box.height / 2
+                val maxDist = maxOf(spineBox.box.width, spineBox.box.height)
+                for (rr in rotatedReads) {
+                    val dist = Math.sqrt(
+                        ((rr.origCenterX - boxCx).toDouble()).let { it * it } +
+                        ((rr.origCenterY - boxCy).toDouble()).let { it * it }
+                    )
+                    if (dist < maxDist && rr.text.length >= 4) {
+                        val rrNorm = Normalize.normalize(rr.text)
+                        val rrCandidates = if (rrNorm.isNotBlank()) {
+                            TextMatcher.matchAll(rr.text, pack.index)
+                        } else emptyList()
+                        if (rrCandidates.isNotEmpty()) {
+                            val bestRr = rrCandidates[0]
+                            val currentBest = state.bestCandidate
+                            val sameGame = currentBest != null &&
+                                bestRr.bggIds.toSet().intersect(currentBest.bggIds.toSet()).isNotEmpty()
+                            val popularNew = bestRr.popularity >= 10000 && bestRr.score >= 0.80
+                            if (sameGame || popularNew || currentBest == null) {
+                                state.addRead(rrNorm, rrCandidates)
+                            }
+                        }
+                    }
+                }
+            }
 
             // Re-OCR: crop the box region, upscale, and re-read for a better result.
             // Only for non-green boxes where a re-read might help.
