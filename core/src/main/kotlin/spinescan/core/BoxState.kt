@@ -105,9 +105,21 @@ class BoxState(
         // Any read has glare? Can't go green.
         val anyGlare = reads.any { it.hasGlare && it.candidate?.bggIds?.toSet() == bestKey }
 
-        // Lead over runner-up
+        // Lead over runner-up. When two candidates tie on score but the best is
+        // massively more popular (100x+ votes), treat it as if there's no real
+        // competition — the lead is the score itself. This handles "THING" matching
+        // both "The Thing" (21k votes) and "Thing Ding" (4 votes) at the same score.
         val lead = if (runnerUp != null) {
-            best.bestScore - runnerUp.bestScore
+            val scoreDiff = best.bestScore - runnerUp.bestScore
+            val popularityRatio = if (runnerUp.candidate.popularity > 0)
+                best.candidate.popularity.toDouble() / runnerUp.candidate.popularity
+            else Double.MAX_VALUE
+            if (scoreDiff < 0.01 && popularityRatio >= 100.0 && best.candidate.popularity >= 10000) {
+                // Tied score but overwhelming popularity difference: treat as no competition
+                best.bestScore
+            } else {
+                scoreDiff
+            }
         } else {
             best.bestScore // No runner-up: lead is the score itself
         }
