@@ -314,9 +314,14 @@ class Eval(
         }
     }
 
+    private val preprocess = OcrExperiment(ocrEngine, pack.index)
+
     /**
-     * Crop a box region from the image, upscale it, and re-OCR for better text.
-     * Returns the best single-line text from the crop, or null if nothing useful.
+     * Crop a box region from the image and re-OCR with multiple preprocessing
+     * strategies. Returns the best text across all strategies, or null.
+     *
+     * Strategies tried: raw crop, 270° rotation (for upright spines),
+     * grayscale, contrast enhancement, and inverted (light-on-dark text).
      */
     private fun rereadBox(
         image: BufferedImage,
@@ -336,28 +341,46 @@ class Eval(
         // Upscale small crops so text is at least ~32px tall
         val minDim = minOf(cw, ch)
         if (minDim < 100) {
-            val scale = 200.0 / minDim
-            val nw = (cw * scale).toInt()
-            val nh = (ch * scale).toInt()
-            val scaled = BufferedImage(nw, nh, BufferedImage.TYPE_INT_RGB)
-            val g = scaled.createGraphics()
-            g.setRenderingHint(
-                java.awt.RenderingHints.KEY_INTERPOLATION,
-                java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC,
-            )
-            g.drawImage(crop, 0, 0, nw, nh, null)
-            g.dispose()
-            crop = scaled
+            crop = preprocess.upscale(crop, 200.0 / minDim)
         }
 
-        // Run OCR on the crop
-        val lines = ocrEngine.detectFromImage(crop)
-        if (lines.isEmpty()) return null
+        // Try multiple preprocessing strategies and pick the best match
+        val variants = mutableListOf<BufferedImage>()
+        variants.add(crop)                                    // raw
+        variants.add(preprocess.rotate270(crop))              // for upright spines
+        variants.add(preprocess.toGrayscale(crop))            // cleaner signal
+        variants.add(preprocess.enhanceContrast(crop, 1.5))   // faded text
+        variants.add(preprocess.invert(crop))                 // light text on dark
 
-        // Return the concatenated text, sorted by confidence
-        val sorted = lines.sortedByDescending { it.confidence }
-        val text = sorted.joinToString(" ") { it.text }.trim()
-        return if (text.length >= 3) text else null
+        data class ReadAttempt(val text: String, val score: Double, val name: String?, val pop: Int)
+        val attempts = mutableListOf<ReadAttempt>()
+
+        for (variant in variants) {
+            val lines = ocrEngine.detectFromImage(variant)
+            if (lines.isEmpty()) continue
+            val text = lines.sortedByDescending { it.confidence }
+                .joinToString(" ") { it.text }.trim()
+            if (text.length < 3) continue
+
+            val candidates = TextMatcher.matchAll(text, pack.index)
+            val top = candidates.firstOrNull()
+            attempts.add(ReadAttempt(
+                text = text,
+                score = top?.score ?: 0.0,
+                name = top?.name,
+                pop = top?.popularity ?: 0,
+            ))
+        }
+
+        if (attempts.isEmpty()) return null
+
+        // Pick the attempt with the highest match score, preferring popular games
+        val best = attempts.maxWithOrNull(
+            compareBy<ReadAttempt> { it.score }
+                .thenBy { it.pop }
+        ) ?: return null
+
+        return if (best.text.length >= 3) best.text else null
     }
 
     private fun emptyMetrics(label: LabelFile) = PhotoMetrics(

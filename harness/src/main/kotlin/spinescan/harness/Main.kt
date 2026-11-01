@@ -18,6 +18,7 @@ fun main(args: Array<String>) {
         "run" -> runCommand(args.drop(1))
         "eval" -> evalCommand(args.drop(1))
         "predict" -> predictCommand(args.drop(1))
+        "experiment" -> experimentCommand(args.drop(1))
         "help", "--help", "-h" -> printUsage()
         else -> {
             if (File(args[0]).exists()) {
@@ -487,6 +488,152 @@ private fun toJsonElement(value: Any?): kotlinx.serialization.json.JsonElement {
         )
         is List<*> -> kotlinx.serialization.json.JsonArray(value.map { toJsonElement(it) })
         else -> kotlinx.serialization.json.JsonPrimitive(value.toString())
+    }
+}
+
+/**
+ * Run OCR preprocessing experiments on test photos.
+ * Tries every preprocessing strategy on each box crop and reports which ones
+ * find the most correct matches.
+ */
+private fun experimentCommand(args: List<String>) {
+    var testsetPath = findTestset()
+    var modelsDir: String? = null
+    var photoFilter: String? = null
+
+    var i = 0
+    while (i < args.size) {
+        when (args[i]) {
+            "--testset" -> { i++; testsetPath = args[i] }
+            "--models" -> { i++; modelsDir = args[i] }
+            "--photo" -> { i++; photoFilter = args[i] }
+            else -> System.err.println("Unknown option: ${args[i]}")
+        }
+        i++
+    }
+
+    val testsetDir = File(testsetPath)
+    val photosDir = File(testsetDir, "photos")
+
+    // Load game index
+    val dbPath = findDb()
+    val packPath = findPack()
+    val pack: PackLoader.Pack
+    if (dbPath != null && File(dbPath).exists()) {
+        pack = FullDbLoader.load(dbPath)
+        println("Loaded ${pack.games.size} games")
+    } else {
+        pack = PackLoader.load(packPath)
+        println("Loaded pack: ${pack.games.size} games")
+    }
+
+    val thresholds = Thresholds.load()
+    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
+    OcrModels.ensureModels(modelDir)
+    val ocrEngine = PpOcrEngine(modelDir)
+    val experiment = OcrExperiment(ocrEngine, pack.index)
+
+    // Load labels
+    val labelsDir = File(testsetDir, "labels")
+    val allLabels = Labels.loadAll(labelsDir).associateBy { it.photo }
+
+    // Find photos
+    val photos = mutableListOf<File>()
+    fun collectPhotos(dir: File) {
+        dir.listFiles()?.sorted()?.forEach { f ->
+            if (f.isDirectory) collectPhotos(f)
+            else if (FrameSource.isImage(f)) {
+                if (photoFilter == null || f.path.contains(photoFilter!!)) {
+                    photos.add(f)
+                }
+            }
+        }
+    }
+    collectPhotos(photosDir)
+
+    // Strategy win counts
+    val strategyWins = mutableMapOf<String, Int>()
+    val strategyBetter = mutableMapOf<String, Int>()
+    var totalBoxes = 0
+
+    for (photo in photos) {
+        val relPath = photo.relativeTo(photosDir).path
+        val label = allLabels[relPath] ?: continue
+        val labelNames = Labels.normalisedNames(label)
+
+        println("\n$relPath (${label.games.size} labelled):")
+
+        val frameSource = FrameSource()
+        val frames = frameSource.load(photo.path, maxDimension = 0)
+        if (frames.isEmpty()) continue
+        val frame = frames[0]
+
+        // Initial OCR
+        val textLines = ocrEngine.detectFromImage(frame.image)
+        val grouper = BoxGrouper()
+        val spineBoxes = grouper.group(textLines)
+
+        for (spineBox in spineBoxes) {
+            totalBoxes++
+
+            // Crop the box with padding
+            val rect = spineBox.box
+            val pad = maxOf(rect.width, rect.height) / 2
+            val cx = maxOf(0, rect.x - pad)
+            val cy = maxOf(0, rect.y - pad)
+            val cw = minOf(frame.image.width - cx, rect.width + pad * 2)
+            val ch = minOf(frame.image.height - cy, rect.height + pad * 2)
+            if (cw < 20 || ch < 20) continue
+
+            val crop = frame.image.getSubimage(cx, cy, cw, ch)
+
+            // Try all strategies
+            val results = experiment.tryAllStrategies(crop)
+
+            // Find which strategies match a labelled game
+            val rawResult = results.firstOrNull { it.strategy == "raw" }
+            val rawMatch = rawResult?.matchName?.let { Normalize.normalize(it) }
+            val rawCorrect = rawMatch != null && labelNames.any {
+                it.startsWith(rawMatch) || rawMatch.startsWith(it)
+            }
+
+            for (r in results) {
+                if (r.matchName == null) continue
+                val norm = Normalize.normalize(r.matchName)
+                val correct = labelNames.any {
+                    it.startsWith(norm) || norm.startsWith(it)
+                }
+                if (correct) {
+                    strategyWins[r.strategy] = (strategyWins[r.strategy] ?: 0) + 1
+                    if (!rawCorrect) {
+                        strategyBetter[r.strategy] = (strategyBetter[r.strategy] ?: 0) + 1
+                    }
+                }
+            }
+
+            // Print interesting cases: strategies that found correct matches raw missed
+            val rawStr = if (rawResult != null) "\"${rawResult.text.take(25)}\" → ${rawResult.matchName ?: "?"}" else "no read"
+            val winners = results.filter { r ->
+                r.matchName != null && Normalize.normalize(r.matchName).let { norm ->
+                    labelNames.any { it.startsWith(norm) || norm.startsWith(it) }
+                }
+            }.map { it.strategy }.distinct()
+
+            if (winners.isNotEmpty() && !rawCorrect) {
+                println("  ✨ ${winners.joinToString(",")} found match; raw: $rawStr")
+                val best = results.filter { it.strategy in winners }.maxByOrNull { it.matchScore }
+                if (best != null) println("     → ${best.matchName} (${best.strategy}, ${String.format("%.2f", best.matchScore)})")
+            }
+        }
+    }
+
+    println("\n${"=".repeat(60)}")
+    println("STRATEGY RESULTS ($totalBoxes boxes)")
+    println("=".repeat(60))
+    println("\nCorrect matches by strategy:")
+    for ((strat, wins) in strategyWins.entries.sortedByDescending { it.value }) {
+        val better = strategyBetter[strat] ?: 0
+        println("  ${strat.padEnd(20)} $wins correct ($better rescued from raw miss)")
     }
 }
 
