@@ -203,6 +203,32 @@ class Eval(
             val state = BoxState(0, thresholds)
             state.addRead(normText, candidates)
 
+            // Re-OCR: crop the box region, upscale, and re-read for a better result.
+            // Only for non-green boxes where a re-read might help.
+            if (state.colour != BoxColour.GREEN) {
+                val rereadText = rereadBox(frame.image, spineBox.box, spineBox.isVertical)
+                if (rereadText != null && rereadText.length >= 4) {
+                    val reNorm = Normalize.normalize(rereadText)
+                    val reCandidates = if (reNorm.isNotBlank()) {
+                        TextMatcher.matchAll(rereadText, pack.index)
+                    } else emptyList()
+                    // Only accept the re-read if:
+                    // 1. It confirms the existing candidate (same game, better score), OR
+                    // 2. It finds a very popular game (10k+ votes) that the original missed
+                    // This prevents fragment noise from crops introducing wrong greens.
+                    if (reCandidates.isNotEmpty()) {
+                        val bestReread = reCandidates[0]
+                        val currentBest = state.bestCandidate
+                        val sameGame = currentBest != null &&
+                            bestReread.bggIds.toSet().intersect(currentBest.bggIds.toSet()).isNotEmpty()
+                        val popularNew = bestReread.popularity >= 10000 && bestReread.score >= 0.80
+                        if (sameGame || popularNew || currentBest == null) {
+                            state.addRead(reNorm, reCandidates)
+                        }
+                    }
+                }
+            }
+
             Pipeline.DetectedBox(
                 boxId = 0,
                 rect = spineBox.box,
@@ -286,6 +312,52 @@ class Eval(
         return labels.any { label ->
             label.startsWith(matchNorm) || matchNorm.startsWith(label)
         }
+    }
+
+    /**
+     * Crop a box region from the image, upscale it, and re-OCR for better text.
+     * Returns the best single-line text from the crop, or null if nothing useful.
+     */
+    private fun rereadBox(
+        image: BufferedImage,
+        rect: Rect,
+        isVertical: Boolean,
+    ): String? {
+        // Expand the crop by 50% padding on each side for context
+        val pad = maxOf(rect.width, rect.height) / 2
+        val cx = maxOf(0, rect.x - pad)
+        val cy = maxOf(0, rect.y - pad)
+        val cw = minOf(image.width - cx, rect.width + pad * 2)
+        val ch = minOf(image.height - cy, rect.height + pad * 2)
+        if (cw < 20 || ch < 20) return null
+
+        var crop = image.getSubimage(cx, cy, cw, ch)
+
+        // Upscale small crops so text is at least ~32px tall
+        val minDim = minOf(cw, ch)
+        if (minDim < 100) {
+            val scale = 200.0 / minDim
+            val nw = (cw * scale).toInt()
+            val nh = (ch * scale).toInt()
+            val scaled = BufferedImage(nw, nh, BufferedImage.TYPE_INT_RGB)
+            val g = scaled.createGraphics()
+            g.setRenderingHint(
+                java.awt.RenderingHints.KEY_INTERPOLATION,
+                java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC,
+            )
+            g.drawImage(crop, 0, 0, nw, nh, null)
+            g.dispose()
+            crop = scaled
+        }
+
+        // Run OCR on the crop
+        val lines = ocrEngine.detectFromImage(crop)
+        if (lines.isEmpty()) return null
+
+        // Return the concatenated text, sorted by confidence
+        val sorted = lines.sortedByDescending { it.confidence }
+        val text = sorted.joinToString(" ") { it.text }.trim()
+        return if (text.length >= 3) text else null
     }
 
     private fun emptyMetrics(label: LabelFile) = PhotoMetrics(

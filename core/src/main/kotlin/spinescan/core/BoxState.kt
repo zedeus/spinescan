@@ -135,12 +135,13 @@ class BoxState(
             best.bestScore >= thresholds.greenSingle &&
                 lead >= thresholds.greenLead -> BoxColour.GREEN
 
-            // Confident single read: lower score but large lead and popular game.
-            // "TERRAFORMIN MARS" at 0.88 with 0.20 lead over runner-up is clearly
-            // Terraforming Mars, not a random game with a similar name.
+            // Confident single read: lower score but large lead and very popular game.
+            // This rescues matches like "TERRAFORMIN MARS" at 0.88 with a clear lead.
+            // Requires 50k+ votes so only well-known games can green this way.
             best.bestScore >= thresholds.confidentMinScore &&
                 lead >= thresholds.confidentLead &&
-                best.candidate.popularity >= thresholds.confidentMinPopularity -> BoxColour.GREEN
+                best.candidate.popularity >= thresholds.confidentMinPopularity &&
+                !shortish -> BoxColour.GREEN
 
             // Multi-frame agreement
             best.bestScore >= thresholds.greenScore &&

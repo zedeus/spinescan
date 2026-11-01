@@ -15,7 +15,7 @@ class ThresholdsTest {
         assertEquals(0.95, t.greenSingle)
         assertEquals(0.15, t.confidentLead)
         assertEquals(0.80, t.confidentMinScore)
-        assertEquals(30000, t.confidentMinPopularity)
+        assertEquals(50000, t.confidentMinPopularity)
         assertEquals(4, t.greenMinTextLength)
         assertEquals(1000, t.shortTextMinPopularity)
         assertEquals(0.45, t.orangeFloor)
