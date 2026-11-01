@@ -1,0 +1,25 @@
+harness/src/main/kotlin/spinescan/harness/OcrExperiment.kt
+  s_8f122b7107cca4::t_09be5362571797 99-110
+harness/src/main/kotlin/spinescan/harness/Main.kt
+  s_8f122b7107cca4::t_d2902949f10ffd 406,408,410
+  s_8f122b7107cca4::t_1c6696d1163eea 367
+  s_8f122b7107cca4::t_58ee0a99d72da1 511-512,517
+  s_8f122b7107cca4::t_f5b579fe14b5a7 296-342
+  s_8f122b7107cca4::t_77c7ceefd7e099 369
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "74542fd25f773fd9ae5f681cc7b2087c464e95be",
+  "prompts": {},
+  "sessions": {
+    "s_8f122b7107cca4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9c29538-8b20-486d-b066-a8b18a5cfb4d",
+        "model": "metr-model"
+      },
+      "human_author": "Zed <zedeus@pm.me>"
+    }
+  }
+}
