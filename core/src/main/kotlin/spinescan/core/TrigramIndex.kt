@@ -14,8 +14,6 @@ class TrigramIndex {
         val bggIds: List<Int>,
         val name: String,
         val score: Double,
-        /** How much of the query's trigrams are found in this entry (0..1). */
-        val containment: Double = score,
         /** Best popularity (num_votes) across all games sharing this name. */
         val popularity: Int = 0,
     )
@@ -117,7 +115,6 @@ class TrigramIndex {
                 val group = groups[entry.normStripped]
                 seen[entry.normStripped] = ScoredGroup(
                     score = score,
-                    containment = containment,
                     bestName = group?.bestName ?: entry.rawName,
                     popularity = group?.bestPopularity ?: entry.popularity,
                 )
@@ -134,7 +131,6 @@ class TrigramIndex {
                     bggIds = group?.bggIds?.toList() ?: emptyList(),
                     name = scored.bestName,
                     score = scored.score,
-                    containment = scored.containment,
                     popularity = scored.popularity,
                 )
             }
@@ -144,7 +140,6 @@ class TrigramIndex {
 
     private class ScoredGroup(
         val score: Double,
-        val containment: Double,
         val bestName: String,
         val popularity: Int,
     )

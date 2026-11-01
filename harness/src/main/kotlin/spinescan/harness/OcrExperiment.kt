@@ -96,16 +96,18 @@ class OcrExperiment(
     // --- Image transformations ---
 
     fun toGrayscale(img: BufferedImage): BufferedImage {
-        val gray = BufferedImage(img.width, img.height, BufferedImage.TYPE_BYTE_GRAY)
-        val g = gray.createGraphics()
-        g.drawImage(img, 0, 0, null)
-        g.dispose()
-        // Convert back to RGB for OCR compatibility
-        val rgb = BufferedImage(img.width, img.height, BufferedImage.TYPE_INT_RGB)
-        val g2 = rgb.createGraphics()
-        g2.drawImage(gray, 0, 0, null)
-        g2.dispose()
-        return rgb
+        val result = BufferedImage(img.width, img.height, BufferedImage.TYPE_INT_RGB)
+        for (y in 0 until img.height) {
+            for (x in 0 until img.width) {
+                val rgb = img.getRGB(x, y)
+                val r = (rgb shr 16) and 0xFF
+                val g = (rgb shr 8) and 0xFF
+                val b = rgb and 0xFF
+                val lum = (0.299 * r + 0.587 * g + 0.114 * b).toInt()
+                result.setRGB(x, y, (lum shl 16) or (lum shl 8) or lum)
+            }
+        }
+        return result
     }
 
     fun sharpen(img: BufferedImage): BufferedImage {

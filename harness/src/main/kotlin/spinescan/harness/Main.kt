@@ -293,6 +293,53 @@ private fun findDb(): String? {
     return null
 }
 
+/** Load game index — prefers full games.db over the 10k pack. */
+private fun loadGameIndex(forcedPackPath: String? = null): PackLoader.Pack {
+    if (forcedPackPath != null) {
+        println("Loading pack from $forcedPackPath ...")
+        val pack = PackLoader.load(forcedPackPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
+        return pack
+    }
+    val dbPath = findDb()
+    if (dbPath != null && File(dbPath).exists()) {
+        println("Loading full game database from $dbPath ...")
+        val pack = FullDbLoader.load(dbPath)
+        println("  ${pack.games.size} games, ${pack.index.size} name entries")
+        return pack
+    }
+    val packPath = findPack()
+    println("Loading pack from $packPath ...")
+    val pack = PackLoader.load(packPath)
+    println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
+    return pack
+}
+
+/** Initialize OCR engine from models directory. */
+private fun initOcr(modelsDir: String? = null): PpOcrEngine {
+    println("Initializing OCR engine ...")
+    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
+    OcrModels.ensureModels(modelDir)
+    val engine = PpOcrEngine(modelDir)
+    println("  Models loaded from ${modelDir.absolutePath}")
+    return engine
+}
+
+/** Recursively collect image files from a directory. */
+private fun collectPhotos(dir: File, filter: String? = null): List<File> {
+    val photos = mutableListOf<File>()
+    fun walk(d: File) {
+        d.listFiles()?.sorted()?.forEach { f ->
+            if (f.isDirectory) walk(f)
+            else if (FrameSource.isImage(f)) {
+                if (filter == null || f.path.contains(filter)) photos.add(f)
+            }
+        }
+    }
+    walk(dir)
+    return photos
+}
+
 private fun evalCommand(args: List<String>) {
     var accept = false
     var testsetPath = findTestset()
@@ -317,35 +364,9 @@ private fun evalCommand(args: List<String>) {
         return
     }
 
-    // Load game index — a forced --pack mimics the phone (names-only pack)
-    val dbPath = findDb()
-    val pack: PackLoader.Pack
-    if (forcedPackPath != null) {
-        println("Loading pack from $forcedPackPath ...")
-        pack = PackLoader.load(forcedPackPath)
-        println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
-    } else if (dbPath != null && File(dbPath).exists()) {
-        println("Loading full game database from $dbPath ...")
-        pack = FullDbLoader.load(dbPath)
-        println("  ${pack.games.size} games, ${pack.index.size} name entries")
-    } else {
-        val packPath = findPack()
-        println("Loading pack from $packPath ...")
-        pack = PackLoader.load(packPath)
-        println("  ${pack.games.size} games, ${pack.index.size} name entries, version ${pack.version}")
-    }
-
+    val pack = loadGameIndex(forcedPackPath)
     val thresholds = Thresholds.load()
-    println("  Thresholds: green=${thresholds.greenScore}, lead=${thresholds.greenLead}, " +
-            "frames=${thresholds.greenFrames}, single=${thresholds.greenSingle}, " +
-            "floor=${thresholds.orangeFloor}")
-
-    // Init OCR
-    println("Initializing OCR engine ...")
-    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
-    OcrModels.ensureModels(modelDir)
-    val ocrEngine = PpOcrEngine(modelDir)
-    println("  Models loaded from ${modelDir.absolutePath}")
+    val ocrEngine = initOcr(modelsDir)
     println()
 
     val eval = Eval(
@@ -382,38 +403,11 @@ private fun predictCommand(args: List<String>) {
 
     val testsetDir = File(testsetPath)
     val photosDir = File(testsetDir, "photos")
-
-    // Load game index
-    val dbPath = findDb()
-    val packPath = findPack()
-    val pack: PackLoader.Pack
-    if (dbPath != null && File(dbPath).exists()) {
-        println("Loading full game database from $dbPath ...")
-        pack = FullDbLoader.load(dbPath)
-        println("  ${pack.games.size} games, ${pack.index.size} name entries")
-    } else {
-        println("Loading pack from $packPath ...")
-        pack = PackLoader.load(packPath)
-        println("  ${pack.games.size} games, ${pack.index.size} name entries")
-    }
-
+    val pack = loadGameIndex()
     val thresholds = Thresholds.load()
+    val ocrEngine = initOcr(modelsDir)
 
-    println("Initializing OCR engine ...")
-    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
-    OcrModels.ensureModels(modelDir)
-    val ocrEngine = PpOcrEngine(modelDir)
-    println()
-
-    // Find all photos recursively
-    val photos = mutableListOf<File>()
-    fun collectPhotos(dir: File) {
-        dir.listFiles()?.sorted()?.forEach { f ->
-            if (f.isDirectory) collectPhotos(f)
-            else if (FrameSource.isImage(f)) photos.add(f)
-        }
-    }
-    collectPhotos(photosDir)
+    val photos = collectPhotos(photosDir)
     println("Found ${photos.size} photos")
 
     val predictions = mutableListOf<Map<String, Any?>>()
@@ -514,42 +508,13 @@ private fun experimentCommand(args: List<String>) {
 
     val testsetDir = File(testsetPath)
     val photosDir = File(testsetDir, "photos")
-
-    // Load game index
-    val dbPath = findDb()
-    val packPath = findPack()
-    val pack: PackLoader.Pack
-    if (dbPath != null && File(dbPath).exists()) {
-        pack = FullDbLoader.load(dbPath)
-        println("Loaded ${pack.games.size} games")
-    } else {
-        pack = PackLoader.load(packPath)
-        println("Loaded pack: ${pack.games.size} games")
-    }
-
-    val thresholds = Thresholds.load()
-    val modelDir = if (modelsDir != null) File(modelsDir) else OcrModels.defaultModelDir()
-    OcrModels.ensureModels(modelDir)
-    val ocrEngine = PpOcrEngine(modelDir)
+    val pack = loadGameIndex()
+    val ocrEngine = initOcr(modelsDir)
     val experiment = OcrExperiment(ocrEngine, pack.index)
 
-    // Load labels
     val labelsDir = File(testsetDir, "labels")
     val allLabels = Labels.loadAll(labelsDir).associateBy { it.photo }
-
-    // Find photos
-    val photos = mutableListOf<File>()
-    fun collectPhotos(dir: File) {
-        dir.listFiles()?.sorted()?.forEach { f ->
-            if (f.isDirectory) collectPhotos(f)
-            else if (FrameSource.isImage(f)) {
-                if (photoFilter == null || f.path.contains(photoFilter!!)) {
-                    photos.add(f)
-                }
-            }
-        }
-    }
-    collectPhotos(photosDir)
+    val photos = collectPhotos(photosDir, photoFilter)
 
     // Strategy win counts
     val strategyWins = mutableMapOf<String, Int>()
